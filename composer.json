@@ -1,0 +1,22 @@
+{
+    "name": "mslib/remote-host",
+    "description": "General Ms library to send requests to an API",
+    "license": "GLP v2",
+    "authors": [
+        {
+            "name": "Marco Spallanzani",
+            "email": "mslib.code@gmail.com"
+        }
+    ],
+    "require": {
+        "zendframework/zend-http": "2.*",
+        "zendframework/zend-config": "2.*",
+        "zendframework/zend-json": "2.*",
+        "zendframework/zend-uri": "2.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Msl\\" : ""
+        }
+    }
+}
