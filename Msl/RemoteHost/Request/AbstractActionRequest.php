@@ -31,16 +31,16 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
     /**
      * URL Adds-On constants
      */
-    const REGEX_TYPE_ADD_ON      = 'regex';
+    const REPLACE_TYPE_ADD_ON    = 'replace';
     const PLAIN_TEXT_TYPE_ADD_ON = 'plain';
 
     /**
      * URL Adds-On access key constants
      */
-    const TYPE_ADD_ON                   = 'type';
-    const CONTENT_ADD_ON                = 'content';
-    const REGEX_DELIMITER_OPEN_ADD_ON   = '{{';
-    const REGEX_DELIMITER_CLOSE_ADD_ON  = '}}';
+    const TYPE_ADD_ON                    = 'type';
+    const CONTENT_ADD_ON                 = 'content';
+    const REPLACE_DELIMITER_OPEN_ADD_ON  = '{{';
+    const REPLACE_DELIMITER_CLOSE_ADD_ON = '}}';
 
     /**
      * Request objects base namespace
@@ -127,7 +127,7 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
     protected $baseUrl;
 
     /**
-     * True if the url has been built during the configuration process (no regex adds on); false if it has to be built at execution time
+     * True if the url has been built during the configuration process (no replace adds on); false if it has to be built at execution time
      *
      * @var bool
      */
@@ -485,7 +485,7 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
      * Adds all adds on the given url string (each add on will be treated individually according to its type)
      *
      * @param string $url        the url to which all adds on will be added
-     * @param array  $parameters the parameter array containing all values to be replaced in regex adds on
+     * @param array  $parameters the parameter array containing all values to be replaced in replace adds on
      *
      * @return string
      *
@@ -501,18 +501,18 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
                 $type    = $addOn[self::TYPE_ADD_ON];
                 $content = $addOn[self::CONTENT_ADD_ON];
                 switch($type) {
-                    case self::REGEX_TYPE_ADD_ON;
+                    case self::REPLACE_TYPE_ADD_ON;
                         $addOnContent = $content;
                         foreach ($parameters as $name => $value) {
-                            // for each parameter we replace its value in the regex adds on and then we add it to the url
-                            $searchIndex = self::REGEX_DELIMITER_OPEN_ADD_ON . $name . self::REGEX_DELIMITER_CLOSE_ADD_ON;
+                            // for each parameter we replace its value in the replace adds on and then we add it to the url
+                            $searchIndex = self::REPLACE_DELIMITER_OPEN_ADD_ON . $name . self::REPLACE_DELIMITER_CLOSE_ADD_ON;
                             $addOnContent = str_replace($searchIndex, $value, $addOnContent);
                         }
-                        if (strpos($addOnContent, self::REGEX_DELIMITER_OPEN_ADD_ON) !== false
-                            || strpos($addOnContent, self::REGEX_DELIMITER_CLOSE_ADD_ON) !== false
+                        if (strpos($addOnContent, self::REPLACE_DELIMITER_OPEN_ADD_ON) !== false
+                            || strpos($addOnContent, self::REPLACE_DELIMITER_CLOSE_ADD_ON) !== false
                         ) {
                             throw new Exception\BadRequestAddOnConfiguredException(
-                                sprintf('Missing replace value for the regex add-on: \'%s\'', $content)
+                                sprintf('Missing replace value for the replace add-on: \'%s\'', $content)
                             );
                         }
                         // adding the current value to the stringified add on

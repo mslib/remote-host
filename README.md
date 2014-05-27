@@ -89,8 +89,8 @@ return array(
                     'adds_on'       => array( // Expressions to be added to the base url // e.g. 'name/protocol/entity/{id}/get
                         // here you can put as many adds on array as many you desire; they will be added to the base url in the given order
                         array(
-                            'type'    => 'plain|regex', // the type of add on: 'plain' will simply concatenate the string given in the content field; 'regex' will first replace all parameter name within brackets '{{xxx}} and then concatenate it to the url
-                            'content' => 'the content' // e.g. plain -> 'text-to-be-concatenated'; 'regex' => 'resource/{{id}}/get'
+                            'type'    => 'plain|replace', // the type of add on: 'plain' will simply concatenate the string given in the content field; 'replace' will first replace all parameter name within brackets '{{xxx}} and then concatenate it to the url
+                            'content' => 'the content' // e.g. plain -> 'text-to-be-concatenated'; 'replace' => 'resource/{{id}}/get'
                         ),
                         array(
                             ...
