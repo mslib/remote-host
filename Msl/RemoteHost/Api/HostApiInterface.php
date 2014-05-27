@@ -43,14 +43,14 @@ interface HostApiInterface
     /**
      * Executes a remote api action by action name
      *
-     * @param string $actionName        the action name to execute
-     * @param array  $requestParameters the request parameters (keys/values) to use in the action execution
-     * @param string $content           the content to be set in the body of the request
-     * @param bool   $trimRequestName   remove or not final '/' from action name
-
+     * @param string $actionName         the action name to execute
+     * @param array  $requestParameters  the request parameters (keys/values) to use in the action execution
+     * @param string $content            the content to be set in the body of the request
+     * @param array  $urlBuildParameters the url build adds on parameter array
+     *
      * @return mixed
      */
-    public function execute($actionName, array $requestParameters = array(), $content = "", $trimRequestName = true);
+    public function execute($actionName, array $requestParameters = array(), $content = "", array $urlBuildParameters = array());
 
     /**
      * Sets all general parameters for all api calls

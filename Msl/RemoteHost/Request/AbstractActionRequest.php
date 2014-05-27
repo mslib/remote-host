@@ -494,27 +494,34 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
     protected function replaceAddsOn($url, array $parameters = array())
     {
         // Parsing the list of adds on and treating them individually according to their type
-        foreach ($this->addOn as $addOn) {
+        $urlAddsOnToString = '';
+        foreach ($this->addsOn as $addOn) {
             if (isset($addOn[self::TYPE_ADD_ON]) && isset($addOn[self::CONTENT_ADD_ON])) {
                 // Checking add-on type
                 $type    = $addOn[self::TYPE_ADD_ON];
                 $content = $addOn[self::CONTENT_ADD_ON];
                 switch($type) {
                     case self::REGEX_TYPE_ADD_ON;
+                        $addOnContent = $content;
                         foreach ($parameters as $name => $value) {
                             // for each parameter we replace its value in the regex adds on and then we add it to the url
                             $searchIndex = self::REGEX_DELIMITER_OPEN_ADD_ON . $name . self::REGEX_DELIMITER_CLOSE_ADD_ON;
-                            $addOnContent = str_replace($searchIndex, $value, $content);
-                            $url .= trim($url, '/') . '/' . $addOnContent;
+                            $addOnContent = str_replace($searchIndex, $value, $addOnContent);
                         }
-                        if (strpos($url, self::REGEX_DELIMITER_OPEN_ADD_ON) !== false) {
+                        if (strpos($addOnContent, self::REGEX_DELIMITER_OPEN_ADD_ON) !== false
+                            || strpos($addOnContent, self::REGEX_DELIMITER_CLOSE_ADD_ON) !== false
+                        ) {
                             throw new Exception\BadRequestAddOnConfiguredException(
                                 sprintf('Missing replace value for the regex add-on: \'%s\'', $content)
                             );
                         }
+                        // adding the current value to the stringified add on
+                        if (!empty($addOnContent)) {
+                            $urlAddsOnToString = trim($urlAddsOnToString, '/') . '/' . $addOnContent;
+                        }
                         break;
                     case self::PLAIN_TEXT_TYPE_ADD_ON;
-                        $url .= trim($url, '/') . '/' . $content;
+                        $urlAddsOnToString = trim($urlAddsOnToString, '/') . '/' . $content;
                         break;
                     default;
                         throw new Exception\BadRequestAddOnConfiguredException(
@@ -531,6 +538,10 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
                     )
                 );
             }
+        }
+        // Adding the adds on string to the url if not empty
+        if (!empty($urlAddsOnToString)) {
+            $url = trim($url, '/') . '/' . trim($urlAddsOnToString, '/');
         }
         return $url;
     }

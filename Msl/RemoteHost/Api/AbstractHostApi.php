@@ -734,10 +734,10 @@ abstract class AbstractHostApi implements HostApiInterface
     /**
      * Executes a remote api action by action name
      *
-     * @param string $actionName        the action name to execute
-     * @param array  $requestParameters the request parameters (keys/values) to use in the action execution
-     * @param string $content           the content to be set in the body of the request
-     * @param bool   $trimRequestName   remove or not final '/' from action name
+     * @param string $actionName         the action name to execute
+     * @param array  $requestParameters  the request parameters (keys/values) to use in the action execution
+     * @param string $content            the content to be set in the body of the request
+     * @param array  $urlBuildParameters the url build adds on parameter array
      *
      * @return null|\Msl\RemoteHost\Response\Wrapper\ResponseWrapperInterface
      *
@@ -745,7 +745,7 @@ abstract class AbstractHostApi implements HostApiInterface
      * @throws \Msl\RemoteHost\Exception\BadConfiguredActionException
      * @throws \Msl\RemoteHost\Exception\UnsuccessApiActionException
      */
-    public function execute($actionName, array $requestParameters = array(), $content = "", $trimRequestName = true)
+    public function execute($actionName, array $requestParameters = array(), $content = "", array $urlBuildParameters = array())
     {
         // Getting configured action request object
         $actionRequest = $this->getActionRequestByName($actionName);
@@ -755,7 +755,7 @@ abstract class AbstractHostApi implements HostApiInterface
 
         // Setting all request parameters with the given values (request parameters array)
         try {
-            $actionRequest->configure($requestParameters, $content, $trimRequestName);
+            $actionRequest->configure($requestParameters, $content, $urlBuildParameters);
         } catch (\Exception $ex) {
             throw new NotConfiguredActionException(
                 sprintf(
