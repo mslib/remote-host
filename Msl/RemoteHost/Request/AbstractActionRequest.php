@@ -11,7 +11,7 @@
 namespace Msl\RemoteHost\Request;
 
 use Zend\Http\Request;
-use Msl\RemoteHost\Exception\BadApiConfigurationException;
+use Msl\RemoteHost\Exception;
 
 /**
  * Abstract Action Request Object: extension of Zend\Http\Request
@@ -23,18 +23,24 @@ use Msl\RemoteHost\Exception\BadApiConfigurationException;
 abstract class AbstractActionRequest extends Request implements ActionRequestInterface
 {
     /**
-     * The action name will be concatenated to the base url
-     *
-     * @const integer
+     * URL Build Methods
      */
-    const ACTION_NAME_AS_URI_PART = 1;
+    const PLAIN_URL_BUILD_METHOD    = 0;
+    const ADDS_ON_URL_BUILD_METHOD  = 1;
 
     /**
-     * The action name will not be concatenated to the base url
-     *
-     * @const integer
+     * URL Adds-On constants
      */
-    const ACTION_NAME_NOT_USED = 2;
+    const REGEX_TYPE_ADD_ON      = 'regex';
+    const PLAIN_TEXT_TYPE_ADD_ON = 'plain';
+
+    /**
+     * URL Adds-On access key constants
+     */
+    const TYPE_ADD_ON                   = 'type';
+    const CONTENT_ADD_ON                = 'content';
+    const REGEX_DELIMITER_OPEN_ADD_ON   = '{{';
+    const REGEX_DELIMITER_CLOSE_ADD_ON  = '}}';
 
     /**
      * Request objects base namespace
@@ -120,21 +126,36 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
      */
     protected $baseUrl;
 
+    /**
+     * True if the url has been built during the configuration process (no regex adds on); false if it has to be built at execution time
+     *
+     * @var bool
+     */
+    protected $urlBuilt = false;
+
+    /**
+     * List of url adds on (these strings will be added to the base url according to the specified add-on type)
+     *
+     * @var array
+     */
+    protected $addsOn;
+
     /*************************************************
      *   C O N F I G U R A T I O N   M E T H O D S   *
      *************************************************/
     /**
      * Initializes a request object
      *
-     * @param string $name            the action name
-     * @param string $requestType     the request type: class name of the request type object; if no full namespace and class is not found, we use the given name plus the default request namespace plus, eventually, the default request class name suffix.
-     * @param string $responseType    the response type: class name of the response type object; if no full namespace and class is not found, we use the given name plus the default response namespace plus, eventually, the default response class name suffix.
-     * @param string $responseWrapper the response wrapper: full class name of the response wrapper object
-     * @param string $method          the http method (only POST and GET are supported)
-     * @param string $urlBuildMethod  the url build method: constant that indicates how the url request is build (see implementing classes for more details)
-     * @param string $baseUrl         the API base url
-     * @param string $port            the API port
-     * @param array  $parameters      the API call parameters array
+     * @param string $name              the action name
+     * @param string $requestType       the request type: class name of the request type object; if no full namespace and class is not found, we use the given name plus the default request namespace plus, eventually, the default request class name suffix.
+     * @param string $responseType      the response type: class name of the response type object; if no full namespace and class is not found, we use the given name plus the default response namespace plus, eventually, the default response class name suffix.
+     * @param string $responseWrapper   the response wrapper: full class name of the response wrapper object
+     * @param string $method            the http method (only POST and GET are supported)
+     * @param string $urlBuildMethod    the url build method: constant that indicates how the url request is build (see implementing classes for more details)
+     * @param string $baseUrl           the API base url
+     * @param string $port              the API port
+     * @param array  $parameters        the API call parameters array
+     * @param array  $addsOn            the URL adds on array (list of strings to be added to the base url according to their type)
      *
      * @return mixed
      */
@@ -147,7 +168,8 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
         $urlBuildMethod,
         $baseUrl,
         $port,
-        array $requiredParameters
+        array $parameters,
+        array $addsOn = array()
     ) {
         // Setting object fields
         $this->name             = $name;
@@ -155,32 +177,49 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
         $this->responseType     = $responseType;
         $this->responseWrapper  = $responseWrapper;
         $this->uriBuildMethod   = $urlBuildMethod;
-        $this->parameters       = $requiredParameters;
+        $this->parameters       = $parameters;
         $this->baseUrl          = rtrim($baseUrl, '/');
         $this->port             = $port;
+        $this->addsOn           = $addsOn;
 
         // Configuring parent object field
         $this->setMethod($method);
         $this->setPort($this->port);
-
-        // Setting Request Uri and checking if it is valid
-        $this->setRequestUri();
     }
 
     /**
      * Configures an action request with the given request values and content
      *
-     * @param array  $requestValues   the request parameters
-     * @param string $content         the body content
-     * @param bool   $trimRequestName remove or not final '/' from action name or not
+     * @param array     $requestValues      the request parameters
+     * @param string    $content            the body content
+     * @param array     $urlBuildParameters the url build adds on parameter array
      *
      * @return mixed
      */
-    public function configure(array $requestValues, $content = "", $trimRequestName = true)
+    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array())
     {
-        if ($trimRequestName) {
-            $this->trimActionName();
-        }
+        // Setting request Uri object
+        $this->setRequestUri($urlBuildParameters);
+    }
+
+    /**
+     * Sets the Request Uri object
+     *
+     * @param array $parameters Url construction parameter array
+     *
+     * @return void
+     */
+    protected function setRequestUri(array $parameters = array())
+    {
+        // Getting base uri according to the uri construction method
+        $uri = $this->constructActionUrl($parameters);
+
+        // Converting it into a Zend Http Uri object
+        $httpUri = new \Zend\Uri\Http($uri);
+        $httpUri->setPort($this->port);
+
+        // Setting request uri object
+        $this->setUri($httpUri);
     }
 
     /*********************************************
@@ -244,6 +283,26 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
     public function getPort()
     {
         return $this->port;
+    }
+
+    /**
+     * Sets the UrlBuilt flag value
+     *
+     * @param boolean $urlBuilt
+     */
+    public function setUrlBuilt($urlBuilt)
+    {
+        $this->urlBuilt = $urlBuilt;
+    }
+
+    /**
+     * Returns the UrlBuilt flag value
+     *
+     * @return boolean
+     */
+    public function getUrlBuilt()
+    {
+        return $this->urlBuilt;
     }
 
     /**
@@ -370,16 +429,6 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
     }
 
     /**
-     * Removes any ending '/' from the action name
-     *
-     * @return void
-     */
-    public function trimActionName()
-    {
-        $this->name = trim($this->name, '/');
-    }
-
-    /**
      * Returns an array of all parameters with a given value
      *
      * @param $requestValues
@@ -401,49 +450,88 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
             }
         }
 
-        // Returing populated array
+        // Returning populated array
         return $parameters;
     }
 
     /**
      * Returns the url of the remote api action to be called
      *
-     * @return string
+     * @param array $parameters the url construction parameter array
      *
-     * @throws BadApiConfigurationException
+     * @throws \Msl\RemoteHost\Exception\BadConfiguredActionException
+     *
+     * @return string
      */
-    protected function constructActionUri()
+    protected function constructActionUrl(array $parameters = array())
     {
         switch($this->uriBuildMethod) {
-            case self::ACTION_NAME_AS_URI_PART;
-                return rtrim($this->baseUrl, '/') . '/' . $this->name;
-                break;
-            case self::ACTION_NAME_NOT_USED;
+            case self::PLAIN_URL_BUILD_METHOD;
                 return $this->baseUrl;
                 break;
+            case self::ADDS_ON_URL_BUILD_METHOD;
+                return $this->replaceAddsOn($this->baseUrl, $parameters);
+                break;
             default;
-                throw new BadApiConfigurationException(sprintf('Unknown url build method: %s', $this->uriBuildMethod));
+                throw new Exception\BadConfiguredActionException(
+                    sprintf('Unknown url build method: %s', $this->uriBuildMethod),
+                    $this
+                );
                 break;
         }
     }
 
     /**
-     * Sets the Request Uri object
+     * Adds all adds on the given url string (each add on will be treated individually according to its type)
      *
-     * @return void
+     * @param string $url        the url to which all adds on will be added
+     * @param array  $parameters the parameter array containing all values to be replaced in regex adds on
      *
-     * @throws BadApiConfigurationException
+     * @return string
+     *
+     * @throws \Msl\RemoteHost\Exception\BadRequestAddOnConfiguredException
      */
-    protected function setRequestUri()
+    protected function replaceAddsOn($url, array $parameters = array())
     {
-        // Getting base uri according to the uri construction method
-        $uri = $this->constructActionUri();
-
-        // Converting it into a Zend Http Uri object
-        $httpUri = new \Zend\Uri\Http($uri);
-        $httpUri->setPort($this->port);
-
-        // Setting request uri object
-        $this->setUri($httpUri);
+        // Parsing the list of adds on and treating them individually according to their type
+        foreach ($this->addOn as $addOn) {
+            if (isset($addOn[self::TYPE_ADD_ON]) && isset($addOn[self::CONTENT_ADD_ON])) {
+                // Checking add-on type
+                $type    = $addOn[self::TYPE_ADD_ON];
+                $content = $addOn[self::CONTENT_ADD_ON];
+                switch($type) {
+                    case self::REGEX_TYPE_ADD_ON;
+                        foreach ($parameters as $name => $value) {
+                            // for each parameter we replace its value in the regex adds on and then we add it to the url
+                            $searchIndex = self::REGEX_DELIMITER_OPEN_ADD_ON . $name . self::REGEX_DELIMITER_CLOSE_ADD_ON;
+                            $addOnContent = str_replace($searchIndex, $value, $content);
+                            $url .= trim($url, '/') . '/' . $addOnContent;
+                        }
+                        if (strpos($url, self::REGEX_DELIMITER_OPEN_ADD_ON) !== false) {
+                            throw new Exception\BadRequestAddOnConfiguredException(
+                                sprintf('Missing replace value for the regex add-on: \'%s\'', $content)
+                            );
+                        }
+                        break;
+                    case self::PLAIN_TEXT_TYPE_ADD_ON;
+                        $url .= trim($url, '/') . '/' . $content;
+                        break;
+                    default;
+                        throw new Exception\BadRequestAddOnConfiguredException(
+                            sprintf('Unknown add-on type: \'%s\'', $type)
+                        );
+                        break;
+                }
+            } else {
+                throw new Exception\BadRequestAddOnConfiguredException(
+                    sprintf(
+                        'Bad configured add-on. Each add-on must specify the following parameters: \'%s\' and \'%s\'',
+                        self::TYPE_ADD_ON,
+                        self::CONTENT_ADD_ON
+                    )
+                );
+            }
+        }
+        return $url;
     }
 }

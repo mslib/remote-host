@@ -86,7 +86,19 @@ return array(
             'action-name' => array( // (REQUIRED) Second Level Action Name 
                 'name'              => '{API action name or url part to be concatenated to the base url (e.g. action1)}', // (REQUIRED) the name of the action
                 'request'           => array(
-                    'name_in_uri'   => true, // (optional) true is the default value; if true, the action name will be part of the uri (i.e. host + name) (e.g. http://www.example.com/api/action1)
+                    'adds_on'       => array( // Expressions to be added to the base url // e.g. 'name/protocol/entity/{id}/get
+                        // here you can put as many adds on array as many you desire; they will be added to the base url in the given order
+                        array(
+                            'type'    => 'plain|regex', // the type of add on: 'plain' will simply concatenate the string given in the content field; 'regex' will first replace all parameter name within brackets '{{xxx}} and then concatenate it to the url
+                            'content' => 'the content' // e.g. plain -> 'text-to-be-concatenated'; 'regex' => 'resource/{{id}}/get'
+                        ),
+                        array(
+                            ...
+                            ...
+                        ),
+                        ...
+                        ...
+                    ),
                     'type'                     => 'UrlEncoded|PostText|Xml|{Custom Class Name with full namespace that extends class Msl\RemoteHost\Request\AbstractActionRequest}', // 'UrlEncoded', 'PostText', 'Xml' are the request implementations available with the library
                     'method'                   => 'GET', // (optional) POST is the default value
                     'parameters'               => array( // (optional) array containing all request parameters (this array will be merged with the action_parameters defined above)
@@ -131,7 +143,13 @@ return array(
     'actions' => array(
         'example-api' => array( 
             'script-list' => array( 
-                'name'              => 'scripts', 
+                'name'              => 'scripts',
+                'adds-on'           => array(
+                    array(
+                        'type'    => 'plain',
+                        'content' => 'scripts'
+                    )
+                ),
                 'request'           => array(
                     'type'                     => 'UrlEncoded', 
                     'parameters'               => array( 
@@ -143,7 +161,6 @@ return array(
                 ),
             ),
         ),
-
     ),
 );
 ```
@@ -351,8 +368,13 @@ return array(
             'driving-directions' => array(
                 'name'              => 'directions/json',
                 'request'           => array(
-                    'name_in_uri'   => true, // (e.g. http://maps.googleapis.com/maps/api/directions/json)
-                    'type'                     => 'UrlEncoded', 
+                    'adds_on'       => array(
+                        array ( // (e.g. http://maps.googleapis.com/maps/api/directions/json)
+                            'type'   => 'plain',
+                            'content => 'directions/json'
+                        )
+                    ),
+                    'type'                     => 'UrlEncoded',
                     'method'                   => 'GET', 
                     'parameters'               => array( 
                         'origin'      => '', // default value for each parameter; default values will be overriden with the values passed in the execute method

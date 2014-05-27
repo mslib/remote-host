@@ -26,16 +26,16 @@ class UrlEncodedActionRequest extends AbstractActionRequest
      *
      * @param array     $requestValues      the request parameters
      * @param string    $content            the body content
-     * @param bool      $trimRequestName    remove or not final '/' from action name or not
+     * @param array     $urlBuildParameters the url build adds on parameter array
      *
      * @return mixed|void
      *
      * @throws \Msl\RemoteHost\Exception\BadConfiguredActionException
      */
-    public function configure(array $requestValues, $content = "", $trimRequestName = true)
+    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array())
     {
         // Calling parent configuration
-        parent::configure($requestValues, $content, $trimRequestName);
+        parent::configure($requestValues, $content, $urlBuildParameters);
 
         // Getting parameters with values
         $parameters = $this->getParametersWithValue($requestValues);

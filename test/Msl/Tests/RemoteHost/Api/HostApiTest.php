@@ -48,8 +48,13 @@ class HostApiTest extends RemoteHostTestCase
                             'action-1' => array(
                                 'name'              => 'action/1',
                                 'request'           => array(
-                                    'name_in_uri'   => true,
                                     'type'              => 'UrlEncoded',
+                                    'adds_on'       => array(
+                                        array(
+                                            'type'    => 'plain',
+                                            'content' => 'action/1'
+                                        ),
+                                    ),
                                     'method'            => 'GET',
                                     'parameters'        => array(
                                         'param1' => '',
@@ -65,8 +70,13 @@ class HostApiTest extends RemoteHostTestCase
                             'action-1' => array(
                                 'name'              => 'action/1',
                                 'request'           => array(
-                                    'name_in_uri'   => true,
                                     'type'          => 'UrlEncoded',
+                                    'adds_on'       => array(
+                                        array(
+                                            'type'    => 'plain',
+                                            'content' => 'action/1'
+                                        ),
+                                    ),
                                     'method'        => 'GET',
                                     'parameters'    => array(
                                         'param1' => '',

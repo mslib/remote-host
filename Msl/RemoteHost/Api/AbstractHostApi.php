@@ -376,17 +376,17 @@ abstract class AbstractHostApi implements HostApiInterface
         }
         $requestType = $request['type'];
 
-        // Checking if action name_in_uri configuration part is defined: if yes, override default value
-        $nameInUri = true;
-        if (isset($request['name_in_uri']) && is_bool($request['name_in_uri'])) {
-            $nameInUri = $request['name_in_uri'];
+        // Checking adds_on configuration parameter
+        $addsOn = array();
+        if (isset($request['adds_on']) && is_array($request['adds_on'])) {
+            $addsOn = $request['adds_on'];
         }
 
-        // Setting url build method according to name_in_uri value
-        if (!$nameInUri) {
-            $urlBuildMethod = AbstractActionRequest::ACTION_NAME_NOT_USED;
+        // Setting url build method according to the presence or not of adds on
+        if (count($addsOn) > 0) {
+            $urlBuildMethod = AbstractActionRequest::ADDS_ON_URL_BUILD_METHOD;
         } else {
-            $urlBuildMethod = AbstractActionRequest::ACTION_NAME_AS_URI_PART;
+            $urlBuildMethod = AbstractActionRequest::PLAIN_URL_BUILD_METHOD;
         }
 
         // Request method is by default HTTP POST
@@ -452,7 +452,6 @@ abstract class AbstractHostApi implements HostApiInterface
         try {
             // Getting an instance of ActionRequestInterface
             $actionRequestObj = $this->getRequestInstance($requestType);
-
             // Initializing action object and adding it to the collection
             $actionRequestObj->init(
                 $name,
@@ -463,7 +462,8 @@ abstract class AbstractHostApi implements HostApiInterface
                 $urlBuildMethod,
                 $host,
                 $port,
-                $parameters
+                $parameters,
+                $addsOn
             );
             $this->actions[$actionNameFirstLevel][$actionNameSecondLevel] = $actionRequestObj;
         } catch (BadApiConfigurationException $bace) {
@@ -756,13 +756,13 @@ abstract class AbstractHostApi implements HostApiInterface
         // Setting all request parameters with the given values (request parameters array)
         try {
             $actionRequest->configure($requestParameters, $content, $trimRequestName);
-        } catch (BadConfiguredActionException $bcae) {
+        } catch (\Exception $ex) {
             throw new NotConfiguredActionException(
                 sprintf(
                     '[%s] An error occured while configuring the action \'%s\': \'%s\'.',
                     $this->getApiName(),
                     $actionName,
-                    $bcae->getMessage()
+                    $ex->getMessage()
                 ),
                 $actionRequest
             );

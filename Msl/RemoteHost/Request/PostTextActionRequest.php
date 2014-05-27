@@ -24,18 +24,18 @@ class PostTextActionRequest extends AbstractActionRequest
     /**
      * Configures an action request with the given request values and content
      *
-     * @param array  $requestValues   the request parameters
-     * @param string $content         the body content
-     * @param bool   $trimRequestName remove or not final '/' from action name or not
+     * @param array     $requestValues      the request parameters
+     * @param string    $content            the body content
+     * @param array     $urlBuildParameters the url build adds on parameter array
      *
      * @return mixed|void
      *
      * @throws \Msl\RemoteHost\Exception\BadConfiguredActionException
      */
-    public function configure(array $requestValues, $content = "", $trimRequestName = true)
+    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array())
     {
         // Set request parameters in parent entity
-        parent::configure($requestValues, $content, $trimRequestName);
+        parent::configure($requestValues, $content, $urlBuildParameters);
 
         // We set the parameters according to the method
         if ($this->isGet()) {
