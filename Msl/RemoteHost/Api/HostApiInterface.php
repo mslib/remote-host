@@ -47,10 +47,11 @@ interface HostApiInterface
      * @param array  $requestParameters  the request parameters (keys/values) to use in the action execution
      * @param string $content            the content to be set in the body of the request
      * @param array  $urlBuildParameters the url build adds on parameter array
+     * @param array  $headersValue       the header value array to override default header values
      *
      * @return mixed
      */
-    public function execute($actionName, array $requestParameters = array(), $content = "", array $urlBuildParameters = array());
+    public function execute($actionName, array $requestParameters = array(), $content = "", array $urlBuildParameters = array(), array $headersValue = array());
 
     /**
      * Sets all general parameters for all api calls

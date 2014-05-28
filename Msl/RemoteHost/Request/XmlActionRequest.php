@@ -24,9 +24,10 @@ class XmlActionRequest extends UrlEncodedActionRequest
     /**
      * Configures an action request with the given request values and content
      *
-     * @param array     $requestValues      the request parameters
-     * @param string    $content            the body content
-     * @param array     $urlBuildParameters the url build adds on parameter array
+     * @param array  $requestValues      the request parameters
+     * @param string $content            the body content
+     * @param array  $urlBuildParameters the url build adds on parameter array
+     * @param array  $headersValue       the header value array to override default header values
      *
      * @return mixed|void
      *

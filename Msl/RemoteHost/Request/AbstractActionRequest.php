@@ -140,6 +140,13 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
      */
     protected $addsOn;
 
+    /**
+     * List of headers to be set in the request object
+     *
+     * @var array
+     */
+    protected $headers;
+
     /*************************************************
      *   C O N F I G U R A T I O N   M E T H O D S   *
      *************************************************/
@@ -156,7 +163,9 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
      * @param string $port              the API port
      * @param array  $parameters        the API call parameters array
      * @param array  $addsOn            the URL adds on array (list of strings to be added to the base url according to their type)
+     * @param array  $headers           the request headers with their default values
      *
+
      * @return mixed
      */
     public function init(
@@ -169,7 +178,8 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
         $baseUrl,
         $port,
         array $parameters,
-        array $addsOn = array()
+        array $addsOn = array(),
+        array $headers = array()
     ) {
         // Setting object fields
         $this->name             = $name;
@@ -181,6 +191,7 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
         $this->baseUrl          = rtrim($baseUrl, '/');
         $this->port             = $port;
         $this->addsOn           = $addsOn;
+        $this->headers          = $headers;
 
         // Configuring parent object field
         $this->setMethod($method);
@@ -190,13 +201,14 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
     /**
      * Configures an action request with the given request values and content
      *
-     * @param array     $requestValues      the request parameters
-     * @param string    $content            the body content
-     * @param array     $urlBuildParameters the url build adds on parameter array
+     * @param array  $requestValues      the request parameters
+     * @param string $content            the body content
+     * @param array  $urlBuildParameters the url build adds on parameter array
+     * @param array  $headersValue       the header value array to override default header values
      *
      * @return mixed
      */
-    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array())
+    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array(), array $headersValue = array())
     {
         // Setting request Uri object
         $this->setRequestUri($urlBuildParameters);

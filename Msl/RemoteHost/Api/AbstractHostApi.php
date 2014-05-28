@@ -389,6 +389,12 @@ abstract class AbstractHostApi implements HostApiInterface
             $urlBuildMethod = AbstractActionRequest::PLAIN_URL_BUILD_METHOD;
         }
 
+        // Getting headers
+        $headers = array();
+        if (isset($request['headers']) && is_array($request['headers'])) {
+            $headers = $request['headers'];
+        }
+
         // Request method is by default HTTP POST
         $method = AbstractActionRequest::METHOD_POST;
         if (isset($request['method'])) {
@@ -463,7 +469,8 @@ abstract class AbstractHostApi implements HostApiInterface
                 $host,
                 $port,
                 $parameters,
-                $addsOn
+                $addsOn,
+                $headers
             );
             $this->actions[$actionNameFirstLevel][$actionNameSecondLevel] = $actionRequestObj;
         } catch (BadApiConfigurationException $bace) {
@@ -738,6 +745,7 @@ abstract class AbstractHostApi implements HostApiInterface
      * @param array  $requestParameters  the request parameters (keys/values) to use in the action execution
      * @param string $content            the content to be set in the body of the request
      * @param array  $urlBuildParameters the url build adds on parameter array
+     * @param array  $headersValue       the header value array to override default header values
      *
      * @return null|\Msl\RemoteHost\Response\Wrapper\ResponseWrapperInterface
      *
@@ -745,8 +753,13 @@ abstract class AbstractHostApi implements HostApiInterface
      * @throws \Msl\RemoteHost\Exception\BadConfiguredActionException
      * @throws \Msl\RemoteHost\Exception\UnsuccessApiActionException
      */
-    public function execute($actionName, array $requestParameters = array(), $content = "", array $urlBuildParameters = array())
-    {
+    public function execute(
+        $actionName,
+        array $requestParameters = array(),
+        $content = "",
+        array $urlBuildParameters = array(),
+        array $headersValue = array()
+    ) {
         // Getting configured action request object
         $actionRequest = $this->getActionRequestByName($actionName);
         if (!$actionRequest instanceof AbstractActionRequest) {

@@ -32,6 +32,7 @@ interface ActionRequestInterface
      * @param string $port              the API port
      * @param array  $parameters        the API call parameters array
      * @param array  $addsOn            the URL adds on array (list of strings to be added to the base url according to their type)
+     * @param array  $headers           the request headers with their default values
      *
      * @return mixed
      */
@@ -45,19 +46,21 @@ interface ActionRequestInterface
         $baseUrl,
         $port,
         array $parameters,
-        array $addsOn = array()
+        array $addsOn = array(),
+        array $headers = array()
     );
 
     /**
      * Configures an action request with the given request values and content
      *
-     * @param array     $requestValues      the request parameters
-     * @param string    $content            the body content
-     * @param array     $urlBuildParameters the url build adds on parameter array
+     * @param array  $requestValues      the request parameters
+     * @param string $content            the body content
+     * @param array  $urlBuildParameters the url build adds on parameter array
+     * @param array  $headersValue       the header value array to override default header values
      *
      * @return mixed
      */
-    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array());
+    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array(), array $headersValue = array());
 
     /**
      * Sets a proper EncType on the given \Zend\Http\Client object
