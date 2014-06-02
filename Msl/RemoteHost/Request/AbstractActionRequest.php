@@ -197,6 +197,11 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
         // Configuring parent object field
         $this->setMethod($method);
         $this->setPort($this->port);
+
+        // Setting headers from header array
+        if (count($requestHeaders) > 0) {
+            $this->getHeaders()->addHeaders($requestHeaders);
+        }
     }
 
     /**
@@ -216,7 +221,7 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
 
         // Setting headers from header array
         if (count($headersValue) > 0) {
-            #$this->getHeaders()->addHeaders($headersValue);
+            $this->getHeaders()->addHeaders($headersValue);
         }
     }
 
