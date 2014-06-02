@@ -25,6 +25,7 @@ use Msl\RemoteHost\Response\XmlResponse;
 use Msl\RemoteHost\Response\PlainTextResponse;
 use Msl\RemoteHost\Response\ActionResponseInterface;
 use Msl\RemoteHost\Response\Wrapper\DefaultResponseWrapper;
+use Msl\RemoteHost\Response\Wrapper\ResponseWrapperInterface;
 
 /**
  * Abstract host api
@@ -591,7 +592,7 @@ abstract class AbstractHostApi implements HostApiInterface
         if (!is_null($responseWrapper) && !empty($responseWrapper)) {
             if (class_exists($responseWrapper)) {
                 $responseWrapperInterface = new $responseWrapper;
-                if ($responseWrapperInterface instanceof \Msl\RemoteHost\Response\Wrapper\ResponseWrapperInterface) {
+                if ($responseWrapperInterface instanceof ResponseWrapperInterface) {
                     $responseObj->setResponseWrapper($responseWrapperInterface);
                 }
             }
@@ -603,7 +604,7 @@ abstract class AbstractHostApi implements HostApiInterface
         }
 
         // We set a response wrapper
-        if ($responseWrapperInterface instanceof \Msl\RemoteHost\Response\Wrapper\ResponseWrapperInterface) {
+        if ($responseWrapperInterface instanceof ResponseWrapperInterface) {
             $responseObj->setResponseWrapper($responseWrapperInterface);
         }
 
@@ -640,9 +641,11 @@ abstract class AbstractHostApi implements HostApiInterface
      *
      * @param string $actionName the action name
      *
+     * @throws \Msl\RemoteHost\Exception\NotConfiguredActionException
+     * @throws \Msl\RemoteHost\Exception\BadApiConfigurationException
+     *
      * @return mixed
      *
-     * @throws \Msl\RemoteHost\Exception\NotConfiguredActionException
      */
     public function getActionRequestByName($actionName)
     {
