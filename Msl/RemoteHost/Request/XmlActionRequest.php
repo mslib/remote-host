@@ -34,12 +34,12 @@ class XmlActionRequest extends UrlEncodedActionRequest
      * @throws \Msl\RemoteHost\Exception\BadConfiguredActionException
      *
      */
-    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array())
+    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array(), array $headersValue = array())
     {
         // Set request parameters in parent entity
-        parent::configure($requestValues, $content, $urlBuildParameters);
+        parent::configure($requestValues, $content, $urlBuildParameters, $headersValue);
 
-        // Set the result to the request body
+        // Set the request body content
         $this->getHeaders()->addHeaderLine('content-type', 'text/xml');
         $this->setContent($content);
     }

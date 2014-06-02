@@ -768,7 +768,7 @@ abstract class AbstractHostApi implements HostApiInterface
 
         // Setting all request parameters with the given values (request parameters array)
         try {
-            $actionRequest->configure($requestParameters, $content, $urlBuildParameters);
+            $actionRequest->configure($requestParameters, $content, $urlBuildParameters, $headersValue);
         } catch (\Exception $ex) {
             throw new NotConfiguredActionException(
                 sprintf(

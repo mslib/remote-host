@@ -32,7 +32,7 @@ interface ActionRequestInterface
      * @param string $port              the API port
      * @param array  $parameters        the API call parameters array
      * @param array  $addsOn            the URL adds on array (list of strings to be added to the base url according to their type)
-     * @param array  $headers           the request headers with their default values
+     * @param array  $requestHeaders    the request headers with their default values
      *
      * @return mixed
      */
@@ -47,7 +47,7 @@ interface ActionRequestInterface
         $port,
         array $parameters,
         array $addsOn = array(),
-        array $headers = array()
+        array $requestHeaders = array()
     );
 
     /**

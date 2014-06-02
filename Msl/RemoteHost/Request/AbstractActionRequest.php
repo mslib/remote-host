@@ -11,6 +11,7 @@
 namespace Msl\RemoteHost\Request;
 
 use Zend\Http\Request;
+use Zend\Uri\Http;
 use Msl\RemoteHost\Exception;
 
 /**
@@ -145,7 +146,7 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
      *
      * @var array
      */
-    protected $headers;
+    protected $requestHeaders;
 
     /*************************************************
      *   C O N F I G U R A T I O N   M E T H O D S   *
@@ -163,7 +164,7 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
      * @param string $port              the API port
      * @param array  $parameters        the API call parameters array
      * @param array  $addsOn            the URL adds on array (list of strings to be added to the base url according to their type)
-     * @param array  $headers           the request headers with their default values
+     * @param array  $requestHeaders    the request headers with their default values
      *
 
      * @return mixed
@@ -179,7 +180,7 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
         $port,
         array $parameters,
         array $addsOn = array(),
-        array $headers = array()
+        array $requestHeaders = array()
     ) {
         // Setting object fields
         $this->name             = $name;
@@ -191,7 +192,7 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
         $this->baseUrl          = rtrim($baseUrl, '/');
         $this->port             = $port;
         $this->addsOn           = $addsOn;
-        $this->headers          = $headers;
+        $this->requestHeaders   = $requestHeaders;
 
         // Configuring parent object field
         $this->setMethod($method);
@@ -212,6 +213,11 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
     {
         // Setting request Uri object
         $this->setRequestUri($urlBuildParameters);
+
+        // Setting headers from header array
+        if (count($headersValue) > 0) {
+            #$this->getHeaders()->addHeaders($headersValue);
+        }
     }
 
     /**
@@ -227,7 +233,7 @@ abstract class AbstractActionRequest extends Request implements ActionRequestInt
         $uri = $this->constructActionUrl($parameters);
 
         // Converting it into a Zend Http Uri object
-        $httpUri = new \Zend\Uri\Http($uri);
+        $httpUri = new Http($uri);
         $httpUri->setPort($this->port);
 
         // Setting request uri object

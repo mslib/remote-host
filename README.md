@@ -207,10 +207,11 @@ To do that, you have to use the method *execute()* of your custom API class, whi
 * ***$actionName***: the action name to execute (required);
 * ***$requestParameters***: the request parameters (keys/values) to use in the action execution (optional -> default value is an empty array);
 * ***$content***: the content to be set in the body of the request (optional -> default value is an empty string);
-* ***$trimRequestName***: remove or not final '/' from action name (optional -> default value is true);
+* ***$urlBuildParameters***: the url build adds on parameter array;
+* ***$headersValue***: the header value array to override default header values;
 
-The first parameter ***$actionName*** corresponds to a string obtained by the concatenation of the two configuration levels 
-(separated by ***'.'***) of the desired action, as configured in the subelement *actions* of the general configuration array.
+The first parameter ***$actionName*** corresponds to a string obtained by the concatenation of the two configuration levels
+(separated by ***'.'***) of the desired action, as configured in the sub-element *actions* of the general configuration array.
 
 For example, let's consider the following configuration:
 
@@ -324,6 +325,50 @@ as the third parameter of the function *execute()*, as shown here below:
     // Creating request content: this could be an XML content for example
     $content = 'text content';
     
+    // Calling action script-list
+    $result = $api->execute('example-api.script-list', $parameters, $content);
+```
+
+### Calling a configured action with some url adds on
+
+If you need to call a given configured action with some specific body content, then you have to pass such content
+as the third parameter of the function *execute()*, as shown here below:
+
+``` php
+<?php
+    ...
+    ...
+    // ApiImplementation is a child class of Msl\RemoteHost\Api\AbstractHostApi
+    $api = new ApiImplementation();
+
+    // Creating parameters array: here we can override all the default parameters defined in the configuration array
+    $parameters = array();
+
+    // Creating request content: this could be an XML content for example
+    $content = 'text content';
+
+    // Calling action script-list
+    $result = $api->execute('example-api.script-list', $parameters, $content);
+```
+
+### Calling a configured action with some specific header values
+
+If you need to call a given configured action with some specific body content, then you have to pass such content
+as the third parameter of the function *execute()*, as shown here below:
+
+``` php
+<?php
+    ...
+    ...
+    // ApiImplementation is a child class of Msl\RemoteHost\Api\AbstractHostApi
+    $api = new ApiImplementation();
+
+    // Creating parameters array: here we can override all the default parameters defined in the configuration array
+    $parameters = array();
+
+    // Creating request content: this could be an XML content for example
+    $content = 'text content';
+
     // Calling action script-list
     $result = $api->execute('example-api.script-list', $parameters, $content);
 ```
@@ -625,21 +670,21 @@ class GoogleRequestActionRequest extends AbstractActionRequest
     /**
      * Configures an action request with the given request values and content
      *
-     * @param array     $requestValues      the request parameters
-     * @param string    $content            the body content
-     * @param bool      $trimRequestName    remove or not final '/' from action name or not
+     * @param array  $requestValues      the request parameters
+     * @param string $content            the body content
+     * @param array  $urlBuildParameters the url build adds on parameter array
+     * @param array  $headersValue       the header value array to override default header values
      *
      * @return mixed|void
      *
      * @throws \Msl\RemoteHost\Exception\BadConfiguredActionException
-     *
      */
-    public function configure(array $requestValues, $content = "", $trimRequestName = true)
+    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array(), array $headersValue = array())
     {
         // Set request parameters in parent entity
-        parent::configure($requestValues, $content, $trimRequestName);
+        parent::configure($requestValues, $content, $urlBuildParameters, $headersValue);
 
-        // Set the result to the request body
+        // Set the request body content
         $this->setContent($content);
     }
 

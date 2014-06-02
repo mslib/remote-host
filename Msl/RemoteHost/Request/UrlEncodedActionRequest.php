@@ -33,10 +33,10 @@ class UrlEncodedActionRequest extends AbstractActionRequest
      *
      * @throws \Msl\RemoteHost\Exception\BadConfiguredActionException
      */
-    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array())
+    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array(), array $headersValue = array())
     {
         // Calling parent configuration
-        parent::configure($requestValues, $content, $urlBuildParameters);
+        parent::configure($requestValues, $content, $urlBuildParameters, $headersValue);
 
         // Getting parameters with values
         $parameters = $this->getParametersWithValue($requestValues);

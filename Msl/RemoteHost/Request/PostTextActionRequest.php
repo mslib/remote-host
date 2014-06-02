@@ -33,10 +33,10 @@ class PostTextActionRequest extends AbstractActionRequest
      *
      * @throws \Msl\RemoteHost\Exception\BadConfiguredActionException
      */
-    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array())
+    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array(), array $headersValue = array())
     {
         // Set request parameters in parent entity
-        parent::configure($requestValues, $content, $urlBuildParameters);
+        parent::configure($requestValues, $content, $urlBuildParameters, $headersValue);
 
         // We set the parameters according to the method
         if ($this->isGet()) {
