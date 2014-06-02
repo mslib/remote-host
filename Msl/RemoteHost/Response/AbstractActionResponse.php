@@ -90,7 +90,7 @@ abstract class AbstractActionResponse implements ActionResponseInterface
 
         // If we have a wrapper response object initialized in the current ActionResponse object, then we return it.
         if ($this->responseWrapper instanceof Wrapper\ResponseWrapperInterface) {
-            $this->responseWrapper->init($rawData);
+            $this->responseWrapper->init($rawData, $this);
             return $this->responseWrapper;
         }
         return $rawData;

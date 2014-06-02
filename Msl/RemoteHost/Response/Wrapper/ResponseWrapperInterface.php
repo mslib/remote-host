@@ -10,6 +10,8 @@
 
 namespace Msl\RemoteHost\Response\Wrapper;
 
+use Msl\RemoteHost\Response\ActionResponseInterface;
+
 /**
  * Response Wrapper Interface
  *
@@ -29,11 +31,12 @@ interface ResponseWrapperInterface
     /**
      * Initializes the object fields with the given raw data
      *
-     * @param array $rawData array containing the response raw data
+     * @param array                                             $rawData        array containing the response raw data
+     * @param \Msl\RemoteHost\Response\ActionResponseInterface  $actionResponse the action response object from which to extract additional information
      *
      * @return mixed
      */
-    public function init(array $rawData);
+    public function init(array $rawData, ActionResponseInterface $actionResponse);
 
     /**
      * Returns the body of the Response

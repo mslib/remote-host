@@ -29,6 +29,13 @@ interface ActionResponseInterface
     public function setResponse(\Zend\Http\Response $response);
 
     /**
+     * Returns a Response object
+     *
+     * @return \Zend\Http\Response
+     */
+    public function getResponse();
+
+    /**
      * Sets a ResponseWrapperInterface implementation to the ActionResponseInterface implementation
      *
      * @param Wrapper\ResponseWrapperInterface $responseWrapper the response wrapper object
