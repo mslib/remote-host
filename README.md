@@ -76,7 +76,7 @@ return array(
         'key1' => 'value1',
         ...
     ),
-    // For all possible values, please look at Zend\Http\Client->$config
+    // For all possible values, please look at Zend\Http\Client->$config array
     'config' => array(
         'adapter'       => 'Zend\Http\Client\Adapter\Curl', // Please, leave this value for stability reason
         ...
@@ -193,6 +193,708 @@ The default class constructor requires two parameters:
 * ***$apiName***: the name of the api to be used in logs, exceptions, etc. (e.g. 'MY_API'); the default value is defined in the class constant Msl\RemoteHost\Api\AbstractHostApi::API_NAME; to override this value, you either pass a valid string as the first parameter of the class constructor, or you redefine the constant API_NAME in your child class;
 * ***$config***: the array containing the configuration defined at step 2;
 
+**CONFIGURATION KEYS**
+----------------------
+
+Let's take a deeper look at the ***Step 2: Configure your api calls***, described here above. As already mentioned, in order to configure your API actions, you need to fill in a configuration array, whose basic structure is as follows:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        'host'      => '', // (REQUIRED) The host api
+        'port'      => '', // (optional) The port
+        'user'      => '', // (optional) The user
+        'password'  => '', // (optional) The password
+    ),
+    'actions_parameters' => array(
+        // Add here all the parameters which are common to all actions. You still can override them by adding a different value in the parameters array of each action
+        'key1' => 'value1',
+        ...
+    ),
+    // For all possible values, please look at Zend\Http\Client->$config
+    'config' => array(
+        'adapter'       => 'Zend\Http\Client\Adapter\Curl', // Please, leave this value for stability reason
+        ...
+    ),
+    'actions' => array(
+        'action-group' => array( // (REQUIRED) First Level Action Name
+            'action-name-1' => array( // (REQUIRED) Second Level Action Name
+                ...
+            ),
+            ...
+            ...
+            'action-name-N' => array( // (REQUIRED) Second Level Action Name
+                ...
+            ),
+        ),
+
+    ),
+);
+```
+
+Let's see now more into details each configuration block.
+
+- ***'parameters'***: an array containing the general API host connection parameter;
+- ***'actions_parameters'***: an array containing all the parameters which are common to all actions; you still can override them by adding a different value in the parameters array of each action, as explained in the dedicated paragraph;
+- ***'config'***: the Zend Http Client class configuration; for stability reason, please only use the adapter *'Zend\Http\Client\Adapter\Curl'*, which is currently the only one that was tested;
+- ***'actions'***: an array containing a description of all the API actions; more details can be found in the dedicated paragraph here below;
+
+### The ***'parameters'*** configuration block
+
+**This is a required block.** If no ***'parameters'*** block is specified in the configuration array, then a *'\Msl\RemoteHost\Exception\BadApiConfigurationException'* exception will be thrown;
+
+This block consists of an array containing all the general API host connection parameter. The current version supports the following parameters:
+
+- ***'host'***: the API host url (with protocol as well); REQUIRED
+- ***'port'***: the API host port; OPTIONAL
+- ***'user'***: the API host connection user; OPTIONAL
+- ***'password'***: the API host connection password; OPTIONAL
+
+The only required parameter is ***'host'***. In case that no host parameter is specified, a *'\Msl\RemoteHost\Exception\BadApiConfigurationException'* exception will be thrown;
+
+An example of configured ***'parameters'*** block is the following:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        'host'      => 'http://www.example.com/api',
+        'port'      => '80',
+        'user'      => 'testUser',
+        'password'  => 'testPassword',
+    ),
+    ...
+    ...
+    ...
+);
+```
+
+### The ***'actions_parameters'*** configuration block
+
+**This is not a required block.**
+
+This block consists of an array containing all the parameters which are common to all actions.
+
+Let's suppose that you want to configure N api calls which share a given set of parameters.
+You can then specify here a list of such parameters as well as their default values.
+
+An example of configured ***'parameters'*** block is the following:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        'host'      => 'http://www.example.com/api',
+        'port'      => '80',
+        'user'      => 'testUser',
+        'password'  => 'testPassword',
+    ),
+    'actions_parameters' => array(
+        'param1'    => 'default-value-1',
+        'param2'    => 'default-value-2',
+        ...
+        ...
+    )
+    ...
+    ...
+);
+```
+
+### The ***'config'*** configuration block
+
+**This is a required block.** If no ***'parameters'*** block is specified in the configuration array, then a *'\Msl\RemoteHost\Exception\BadApiConfigurationException'* exception will be thrown;
+
+This block consists of an array containing all the Zend Http Client class configuration keys.
+For a full list of all possible values, please refer to the official Zend\Http\Client documentation or take a look at Zend\Http\Client->$config array.
+
+NB. For stability reason, please only use the adapter *'Zend\Http\Client\Adapter\Curl'*, which is currently the only one that was tested;
+
+An example of configured ***'config'*** block is the following:
+
+``` php
+<?php
+
+return array(
+    ...
+    ...
+    ...
+    'config' => array(
+        'maxredirects'  => 2,
+        'timeout'       => 30,
+        'adapter'       => 'Zend\Http\Client\Adapter\Curl',
+        ...
+        ...
+    )
+    ...
+    ...
+);
+```
+
+### The ***'actions'*** configuration block
+
+**This is a required block.** If no ***'parameters'*** block is specified in the configuration array, then a *'\Msl\RemoteHost\Exception\BadApiConfigurationException'* exception will be thrown;
+
+
+**BUILT-IN REQUESTS**
+---------------------
+
+All requests sent by an implementation of *'Msl\RemoteHost\Api\AbstractHostApi'* will be wrapped in a request object, which extends the abstract class 'Msl\RemoteHost\Request\AbstractActionRequest'.
+
+The class *'Msl\RemoteHost\Request\AbstractActionRequest'* is an extension of the class *'Zend\Http\Request'*.
+
+### The AbstractActionRequest class
+
+The *AbstractActionRequest* implements the interface *'Msl\RemoteHost\Request\ActionRequestInterface'*, which defines the following methods to be implemented in the child class:
+
+* ***init()***: initializes the request object (sets request type, response and response wrapper types, request method, base url, port, etc.);
+* ***configure()***: configures an action request (sets request parameter, content, headers, etc.);
+* ***setClientEncType()***: sets the required encoding method;
+
+The *AbstractActionRequest* class has a default implementation of the method *init()*, but not for the methods *configure()* and *setClientEncType()*.
+
+### The built-in request objects
+
+The built-in request objects are:
+
+* ***UrlEncodedActionRequest***: used to send a request with encoded parameters;
+* ***UrlEncodedFromContentActionRequest***: used to send a request with encoded parameters extracted from the given request content;
+* ***XmlActionRequest***: used to send a request with an Xml content type;
+* ***PlainTextActionRequest***: used to send a request with a Plain Text content type;
+* ***JsonActionRequest***: used to send a request with a Json content type;
+
+If you have to send a request whose content needs to be encoded in the url, then use the type ***UrlEncodedActionRequest***.
+On the other hand, if you want to send a request whose body contains a plain text, xml data or json data then use respectively
+***PlainTextActionRequest***, ***XmlActionRequest*** or ***JsonActionRequest***.
+
+#### The UrlEncoded request
+
+The UrlEncoded request object can be used to send a request with parameters encoded in the request.
+
+It supports the GET, POST, PUT, PATCH and DELETE http methods.
+
+In order to use it, you need to use the label *'UrlEncoded'* for the configuration key *'request.type'* of a given configured action as follows:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        ...
+    ),
+    ...
+    'actions' => array(
+        'example-api' => array(
+            'action-1' => array(
+                'name'              => 'scripts',
+                'request'           => array(
+                    'type' => 'UrlEncoded',
+                    ...
+                ),
+                ...
+            ),
+        ),
+    ),
+);
+```
+
+#### The UrlEncodedFromContent request
+
+The UrlEncodedFromContent request object can be used to send a request with parameters encoded in the request, these parameters being extracted from a given content.
+
+It supports the GET, POST, PUT, PATCH and DELETE http methods.
+
+In order to use it, you need to use the label *'UrlEncodedFromContent'* for the configuration key *'request.type'* of a given configured action as follows:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        ...
+    ),
+    ...
+    'actions' => array(
+        'example-api' => array(
+            'action-1' => array(
+                'name'              => 'scripts',
+                'request'           => array(
+                    'type' => 'UrlEncodedFromContent',
+                    ...
+                ),
+                ...
+            ),
+        ),
+    ),
+);
+```
+
+#### The Xml request
+
+The Xml request object can be used to send a request with an Xml content. It automatically adds the header 'Content-Type'=>'text/xml' to the request.
+
+It supports the GET, POST, PUT, PATCH and DELETE http methods.
+
+In order to use it, you need to use the label *'Xml'* for the configuration key *'request.type'* of a given configured action as follows:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        ...
+    ),
+    ...
+    'actions' => array(
+        'example-api' => array(
+            'action-1' => array(
+                'name'              => 'scripts',
+                'request'           => array(
+                    'type' => 'Xml',
+                    ...
+                ),
+                ...
+            ),
+        ),
+    ),
+);
+```
+
+#### The PlainText request
+
+The PlainText request object can be used to send a request with a plain text content.
+
+It supports the GET, POST, PUT, PATCH and DELETE http methods.
+
+In order to use it, you need to use the label *'PlainText'* for the configuration key *'request.type'* of a given configured action as follows:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        ...
+    ),
+    ...
+    'actions' => array(
+        'example-api' => array(
+            'action-1' => array(
+                'name'              => 'scripts',
+                'request'           => array(
+                    'type' => 'PlainText',
+                    ...
+                ),
+                ...
+            ),
+        ),
+    ),
+);
+```
+
+#### The Json request
+
+The Json request object can be used to send a request with a Json content. It automatically adds the header 'Content-Type'=>'application/json' to the request.
+
+It supports the GET, POST, PUT, PATCH and DELETE http methods.
+
+In order to use it, you need to use the label *'Json'* for the configuration key *'request.type'* of a given configured action as follows:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        ...
+    ),
+    ...
+    'actions' => array(
+        'example-api' => array(
+            'action-1' => array(
+                'name'              => 'scripts',
+                'request'           => array(
+                    'type' => 'Json',
+                    ...
+                ),
+                ...
+            ),
+        ),
+    ),
+);
+```
+
+#### Load your Custom Request objects
+
+You can also define your own request objects by extending the base abstract class *'Msl\RemoteHost\Request\AbstractActionRequest'* and use it in the configuration file.
+
+Here follow a class implementation and a configuration file for a custom request object.
+
+``` php
+<?php
+
+namespace Msl\Example\Request;
+
+class GoogleRequestActionRequest extends AbstractActionRequest
+{
+    /**
+     * Configures an action request with the given request values and content
+     *
+     * @param array  $requestValues      the request parameters
+     * @param string $content            the body content
+     * @param array  $urlBuildParameters the url build adds on parameter array
+     * @param array  $headersValue       the header value array to override default header values
+     *
+     * @return mixed|void
+     *
+     * @throws \Msl\RemoteHost\Exception\BadConfiguredActionException
+     */
+    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array(), array $headersValue = array())
+    {
+        // Set request parameters in parent entity
+        parent::configure($requestValues, $content, $urlBuildParameters, $headersValue);
+
+        // Set the request body content
+        $this->setContent($content);
+    }
+
+    /**
+     * Sets a proper EncType on the given \Zend\Http\Client object (for Xml Request, used value is Client::ENC_URLENCODED)
+     *
+     * @param \Zend\Http\Client $client the Zend http client object
+     *
+     * @return mixed|\Zend\Http\Client
+     */
+    public function setClientEncType(\Zend\Http\Client $client)
+    {
+        // Setting EncType to UrlEncoded
+        $client->setEncType(\Zend\Http\Client::ENC_URLENCODED);
+
+        return $client;
+    }
+}
+```
+
+You can then use your custom request object by specifying the full class namespace in the configuration key *'request.type'* of a given configured action as follows:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        ...
+    ),
+    ...
+    'actions' => array(
+        'example-api' => array(
+            'action-1' => array(
+                'name'              => 'scripts',
+                'request'           => array(
+                    'type' => 'Msl\Example\Request\GoogleRequestActionRequest',
+                    ...
+                ),
+                ...
+            ),
+        ),
+    ),
+);
+```
+
+**BUILT-IN RESPONSES**
+----------------------
+
+All response received by an implementation of 'Msl\RemoteHost\Api\AbstractHostApi' will be wrapped in a response object, which extends the abstract class 'Msl\RemoteHost\Response\AbstractActionResponse'.
+
+### The AbstractActionResponse class
+
+The *AbstractActionResponse* implements the interface *'Msl\RemoteHost\Response\ActionResponseInterface'*, which defines the following methods to be implemented in the child class:
+
+* ***setResponse()***: sets the \Zend\Http\Response object in a given response object;
+* ***setResponseWrapper()***: sets a ResponseWrapperInterface implementation in a given response object (see section below for an explaination of the response wrapper objects);
+* ***bodyToArray()***: converts the body of the response to an array according to the response type (json to array, xml to array, text to array, etc.);
+* ***getParsedResponse()***: returns a ResponseWrapperInterface instance;
+
+The *AbstractActionResponse* class has a default implementation of the method *setResponse()*, *setResponseWrapper()* and *getParsedResponse()*, but not for the method *bodyToArray()*.
+
+### The built-in response objects
+
+The built-in response objects are:
+
+* ***JsonActionResponse***: used for all Json responses;
+* ***XmlActionResponse***: used for all Xml responses;
+* ***PlainTextActionResponse***: used for all Plain Text responses;
+
+### The Json response
+
+The Json response object can be used when we receive a Json response for a given request.
+
+In order to use it, you need to use the label *'Json'* for the configuration key *'response.type'* of a given configured action as follows:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        ...
+    ),
+    ...
+    'actions' => array(
+        'example-api' => array(
+            'action-1' => array(
+                'name'              => 'scripts',
+                'response'           => array(
+                    'type' => 'Json',
+                    ...
+                ),
+                ...
+            ),
+        ),
+    ),
+);
+```
+
+### The Xml response
+
+The Xml response object can be used when we receive a Xml response for a given request.
+
+In order to use it, you need to use the label *'Xml'* for the configuration key *'response.type'* of a given configured action as follows:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        ...
+    ),
+    ...
+    'actions' => array(
+        'example-api' => array(
+            'action-1' => array(
+                'name'              => 'scripts',
+                'response'           => array(
+                    'type' => 'Xml',
+                    ...
+                ),
+                ...
+            ),
+        ),
+    ),
+);
+```
+
+### The PlainText response
+
+The PlainText response object can be used when we receive a plain text response for a given request.
+
+In order to use it, you need to use the label *'PlainText'* for the configuration key *'response.type'* of a given configured action as follows:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        ...
+    ),
+    ...
+    'actions' => array(
+        'example-api' => array(
+            'action-1' => array(
+                'name'              => 'scripts',
+                'response'           => array(
+                    'type' => 'PlainText',
+                    ...
+                ),
+                ...
+            ),
+        ),
+    ),
+);
+```
+
+### Load your Custom Response objects
+
+You can also define your own response objects by extending the base abstract class *'Msl\RemoteHost\Response\AbstractActionResponse'* and use it in the configuration file.
+
+Here follow a class implementation and a configuration file for a custom response object.
+
+``` php
+<?php
+
+namespace Msl\Example\Request;
+
+class GoogleResponseActionResponse extends AbstractActionResponse
+{
+    /**
+     * Converts the Response object body to an array
+     *
+     * @return array
+     */
+    public function bodyToArray()
+    {
+        // Getting response content
+        $responseContent = $this->response->getContent();
+
+        // We parse the content in a custom way and we convert it to an array...
+        $customContentAsArray = array();
+
+        ...........
+        ...........
+        ...........
+
+        return $customContentAsArray;
+    }
+}
+```
+You can then use your custom response object by specifying the full class namespace in the configuration key *'response.type'* of a given configured action as follows:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        ...
+    ),
+    ...
+    'actions' => array(
+        'example-api' => array(
+            'action-1' => array(
+                'name'              => 'scripts',
+                'response'           => array(
+                    'type' => 'Msl\Example\Response\GoogleResponseActionResponse',
+                    ...
+                ),
+                ...
+            ),
+        ),
+    ),
+);
+```
+
+**BUILT-IN RESPONSE WRAPPERS**
+------------------------------
+
+All Response objects (point above) are wrapped into a *ResponseWrapper* object, which 'extracts' some additional information from the Response object.
+
+This additional information includes:
+
+- The Response Status: true if request was successful; false otherwise;
+- The Response Return Code: an internal or general return code (e.g. HTTP status code);
+- The Response Return Message associated to the found Return Code: an internal or general return message (e.g. HTTP status message);
+- The Response Body: an array representation of the response body;
+
+All Response Wrapper objects should extend the base abstract class *'Msl\RemoteHost\Response\Wrapper\AbstractResponseWrapper'*, which implements the interface *'Msl\RemoteHost\Response\Wrapper\ResponseWrapperInterface'*.
+
+### The Default response wrapper
+
+If you do not define a Response Wrapper in the configuration key *'response.wrapper'* , the default wrapper \Msl\RemoteHost\Response\Wrapper\DefaultResponseWrapper will be used.
+
+This Wrapper object carries the following information:
+
+- The Response Status: true if the HTTP status code is equal to 200, 201, 202 or 204; false otherwise;
+- The Response Return Code: HTTP status code as it is set in the response received from the remote api (http status codes; e.g. 200, 201, 404, etc.);
+- The Response Return Message: HTTP status message as it is set in the response received from the remote api (e.g. OK, Created, Accepted, Not Found, etc.);
+- The Response Body: an array representation of the response body as received from the remote api;
+
+### Load your Custom Response Wrapper objects
+
+You can also define your own Response Wrapper objects by extending the base abstract class *'Msl\RemoteHost\Response\Wrapper\AbstractResponseWrapper'* and use it in the configuration file.
+
+Here follow a class implementation and a configuration file for a custom response wrapper object.
+
+``` php
+<?php
+
+use Msl\RemoteHost\Response\Wrapper\AbstractResponseWrapper;
+
+/**
+ * Json Google Response Wrapper for Google Actions
+ */
+class JsonGoogleResponseWrapper extends AbstractResponseWrapper
+{
+    /**
+     * Defaults status strings
+     */
+    const STATUS_NOT_FOUND = "NOT_FOUND";
+    const STATUS_OK        = "OK";
+
+    /**
+     * Initializes the object fields with the given raw data.
+     *
+     * @param array $rawData an array containing the raw response
+     *
+     * @return mixed
+     */
+    public function init(array $rawData)
+    {
+        // Setting raw data field
+        $this->rawData = $rawData;
+
+        // Setting status, returnCode and returnMessage fields to the ResponseWrapper entity
+        if (is_array($rawData)) {
+            // Setting  return code and return message
+            if (isset($rawData['status'])) {
+                if ($rawData['status'] === self::STATUS_OK) {
+                    $this->status        = true;
+                    $this->returnCode    = self::STATUS_OK;
+                    $this->returnMessage = self::STATUS_OK;
+                } else {
+                    $this->status        = false;
+                    $this->returnCode    = self::STATUS_NOT_FOUND;
+                    $this->returnMessage = self::STATUS_NOT_FOUND;
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the found routes
+     *
+     * @return array
+     */
+    public function getRoutes()
+    {
+        return $this->getBody();
+    }
+
+    /**
+     * Return the body of the Response.
+     *
+     * @return array
+     */
+    public function getBody()
+    {
+        if (isset($this->rawData['routes'])) {
+            return $this->rawData['routes'];
+        }
+        return array();
+    }
+}
+```
+You can then use your custom response wrapper object by specifying the full class namespace in the configuration key *'response.wrapper'* of a given configured action as follows:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        ...
+    ),
+    ...
+    'actions' => array(
+        'example-api' => array(
+            'action-1' => array(
+                'name'              => 'scripts',
+                'response'           => array(
+                    'type'    => 'Json',
+                    'wrapper' => 'Connector\Api\Google\ResponseWrapper\JsonGoogleResponseWrapper',
+                ),
+                ...
+            ),
+        ),
+    ),
+);
+```
 
 **BASIC USE**
 -------------
@@ -539,552 +1241,3 @@ class GoogleApi extends AbstractHostApi
 }
 ```
 As you can see, this method has three parameters: origin, destination and sensor. These parameters corresponds to the required Google API call parameter origin, destination and sensor as explained in Google API documentation for the action 'directions'.
-
-**BUILT-IN REQUESTS**
----------------------
-
-All requests sent by an implementation of *'Msl\RemoteHost\Api\AbstractHostApi'* will be wrapped in a request object, which extends the abstract class 'Msl\RemoteHost\Request\AbstractActionRequest'.
-
-The class *'Msl\RemoteHost\Request\AbstractActionRequest'* is an extension of the class *'Zend\Http\Request'*.
-
-### The AbstractActionRequest class
-
-The *AbstractActionRequest* implements the interface *'Msl\RemoteHost\Request\ActionRequestInterface'*, which defines the following methods to be implemented in the child class:
-
-* ***init()***: initializes the request object (sets request type, response and response wrapper types, request method, base url, port, etc.);
-* ***configure()***: configures an action request (sets request parameter, content, headers, etc.);
-* ***setClientEncType()***: sets the required encoding method;
-
-The *AbstractActionRequest* class has a default implementation of the method *init()*, but not for the methods *configure()* and *setClientEncType()*.
-
-### The built-in request objects
-
-The built-in request objects are: 
-
-* ***UrlEncodedActionRequest***: used to send a request with encoded parameters;
-* ***UrlEncodedFromContentActionRequest***: used to send a request with encoded parameters extracted from the given request content;
-* ***XmlActionRequest***: used to send a request with an Xml content type;
-* ***PlainTextActionRequest***: used to send a request with a Plain Text content type;
-* ***JsonActionRequest***: used to send a request with a Json content type;
-
-If you have to send a request whose content needs to be encoded in the url, then use the type ***UrlEncodedActionRequest***.
-On the other hand, if you want to send a request whose body contains a plain text, xml data or json data then use respectively
-***PlainTextActionRequest***, ***XmlActionRequest*** or ***JsonActionRequest***.
-
-#### The UrlEncoded request
-
-The UrlEncoded request object can be used to send a request with parameters encoded in the request. 
-
-It supports the GET, POST, PUT, PATCH and DELETE http methods.
-
-In order to use it, you need to use the label *'UrlEncoded'* for the configuration key *'request.type'* of a given configured action as follows:
-
-``` php
-<?php
-
-return array(
-    'parameters' => array(
-        ...
-    ),
-    ...
-    'actions' => array(
-        'example-api' => array( 
-            'action-1' => array( 
-                'name'              => 'scripts', 
-                'request'           => array(
-                    'type' => 'UrlEncoded', 
-                    ...
-                ),
-                ...
-            ),
-        ),
-    ),
-);
-```
-
-#### The UrlEncodedFromContent request
-
-The UrlEncodedFromContent request object can be used to send a request with parameters encoded in the request, these parameters being extracted from a given content.
-
-It supports the GET, POST, PUT, PATCH and DELETE http methods.
-
-In order to use it, you need to use the label *'UrlEncodedFromContent'* for the configuration key *'request.type'* of a given configured action as follows:
-
-``` php
-<?php
-
-return array(
-    'parameters' => array(
-        ...
-    ),
-    ...
-    'actions' => array(
-        'example-api' => array(
-            'action-1' => array(
-                'name'              => 'scripts',
-                'request'           => array(
-                    'type' => 'UrlEncodedFromContent',
-                    ...
-                ),
-                ...
-            ),
-        ),
-    ),
-);
-```
-
-#### The Xml request
-
-The Xml request object can be used to send a request with an Xml content. It automatically adds the header 'Content-Type'=>'text/xml' to the request.
-
-It supports the GET, POST, PUT, PATCH and DELETE http methods.
-
-In order to use it, you need to use the label *'Xml'* for the configuration key *'request.type'* of a given configured action as follows:
-
-``` php
-<?php
-
-return array(
-    'parameters' => array(
-        ...
-    ),
-    ...
-    'actions' => array(
-        'example-api' => array( 
-            'action-1' => array( 
-                'name'              => 'scripts', 
-                'request'           => array(
-                    'type' => 'Xml', 
-                    ...
-                ),
-                ...
-            ),
-        ),
-    ),
-);
-```
-
-#### The PlainText request
-
-The PlainText request object can be used to send a request with a plain text content.
-
-It supports the GET, POST, PUT, PATCH and DELETE http methods.
-
-In order to use it, you need to use the label *'PlainText'* for the configuration key *'request.type'* of a given configured action as follows:
-
-``` php
-<?php
-
-return array(
-    'parameters' => array(
-        ...
-    ),
-    ...
-    'actions' => array(
-        'example-api' => array( 
-            'action-1' => array( 
-                'name'              => 'scripts', 
-                'request'           => array(
-                    'type' => 'PlainText',
-                    ...
-                ),
-                ...
-            ),
-        ),
-    ),
-);
-```
-
-#### The Json request
-
-The Json request object can be used to send a request with a Json content. It automatically adds the header 'Content-Type'=>'application/json' to the request.
-
-It supports the GET, POST, PUT, PATCH and DELETE http methods.
-
-In order to use it, you need to use the label *'Json'* for the configuration key *'request.type'* of a given configured action as follows:
-
-``` php
-<?php
-
-return array(
-    'parameters' => array(
-        ...
-    ),
-    ...
-    'actions' => array(
-        'example-api' => array(
-            'action-1' => array(
-                'name'              => 'scripts',
-                'request'           => array(
-                    'type' => 'Json',
-                    ...
-                ),
-                ...
-            ),
-        ),
-    ),
-);
-```
-
-#### Load your Custom Request objects
-
-You can also define your own request objects by extending the base abstract class *'Msl\RemoteHost\Request\AbstractActionRequest'* and use it in the configuration file.
-
-Here follow a class implementation and a configuration file for a custom request object.
-
-``` php
-<?php
-
-namespace Msl\Example\Request;
-
-class GoogleRequestActionRequest extends AbstractActionRequest
-{
-    /**
-     * Configures an action request with the given request values and content
-     *
-     * @param array  $requestValues      the request parameters
-     * @param string $content            the body content
-     * @param array  $urlBuildParameters the url build adds on parameter array
-     * @param array  $headersValue       the header value array to override default header values
-     *
-     * @return mixed|void
-     *
-     * @throws \Msl\RemoteHost\Exception\BadConfiguredActionException
-     */
-    public function configure(array $requestValues, $content = "", array $urlBuildParameters = array(), array $headersValue = array())
-    {
-        // Set request parameters in parent entity
-        parent::configure($requestValues, $content, $urlBuildParameters, $headersValue);
-
-        // Set the request body content
-        $this->setContent($content);
-    }
-
-    /**
-     * Sets a proper EncType on the given \Zend\Http\Client object (for Xml Request, used value is Client::ENC_URLENCODED)
-     *
-     * @param \Zend\Http\Client $client the Zend http client object
-     *
-     * @return mixed|\Zend\Http\Client
-     */
-    public function setClientEncType(\Zend\Http\Client $client)
-    {
-        // Setting EncType to UrlEncoded
-        $client->setEncType(\Zend\Http\Client::ENC_URLENCODED);
-
-        return $client;
-    }
-}
-```
-
-You can then use your custom request object by specifying the full class namespace in the configuration key *'request.type'* of a given configured action as follows:
-
-``` php
-<?php
-
-return array(
-    'parameters' => array(
-        ...
-    ),
-    ...
-    'actions' => array(
-        'example-api' => array( 
-            'action-1' => array( 
-                'name'              => 'scripts', 
-                'request'           => array(
-                    'type' => 'Msl\Example\Request\GoogleRequestActionRequest', 
-                    ...
-                ),
-                ...
-            ),
-        ),
-    ),
-);
-```
-
-**BUILT-IN RESPONSES**
-----------------------
-
-All response received by an implementation of 'Msl\RemoteHost\Api\AbstractHostApi' will be wrapped in a response object, which extends the abstract class 'Msl\RemoteHost\Response\AbstractActionResponse'.
-
-### The AbstractActionResponse class
-
-The *AbstractActionResponse* implements the interface *'Msl\RemoteHost\Response\ActionResponseInterface'*, which defines the following methods to be implemented in the child class:
-
-* ***setResponse()***: sets the \Zend\Http\Response object in a given response object;
-* ***setResponseWrapper()***: sets a ResponseWrapperInterface implementation in a given response object (see section below for an explaination of the response wrapper objects);
-* ***bodyToArray()***: converts the body of the response to an array according to the response type (json to array, xml to array, text to array, etc.);
-* ***getParsedResponse()***: returns a ResponseWrapperInterface instance;
-
-The *AbstractActionResponse* class has a default implementation of the method *setResponse()*, *setResponseWrapper()* and *getParsedResponse()*, but not for the method *bodyToArray()*.
-
-### The built-in response objects
-
-The built-in response objects are: 
-
-* ***JsonActionResponse***: used for all Json responses;
-* ***XmlActionResponse***: used for all Xml responses;
-* ***PlainTextActionResponse***: used for all Plain Text responses;
-
-### The Json response
-
-The Json response object can be used when we receive a Json response for a given request. 
-
-In order to use it, you need to use the label *'Json'* for the configuration key *'response.type'* of a given configured action as follows:
-
-``` php
-<?php
-
-return array(
-    'parameters' => array(
-        ...
-    ),
-    ...
-    'actions' => array(
-        'example-api' => array( 
-            'action-1' => array( 
-                'name'              => 'scripts', 
-                'response'           => array(
-                    'type' => 'Json', 
-                    ...
-                ),
-                ...
-            ),
-        ),
-    ),
-);
-```
-
-### The Xml response
-
-The Xml response object can be used when we receive a Xml response for a given request. 
-
-In order to use it, you need to use the label *'Xml'* for the configuration key *'response.type'* of a given configured action as follows:
-
-``` php
-<?php
-
-return array(
-    'parameters' => array(
-        ...
-    ),
-    ...
-    'actions' => array(
-        'example-api' => array( 
-            'action-1' => array( 
-                'name'              => 'scripts', 
-                'response'           => array(
-                    'type' => 'Xml', 
-                    ...
-                ),
-                ...
-            ),
-        ),
-    ),
-);
-```
-
-### The PlainText response
-
-The PlainText response object can be used when we receive a plain text response for a given request. 
-
-In order to use it, you need to use the label *'PlainText'* for the configuration key *'response.type'* of a given configured action as follows:
-
-``` php
-<?php
-
-return array(
-    'parameters' => array(
-        ...
-    ),
-    ...
-    'actions' => array(
-        'example-api' => array( 
-            'action-1' => array( 
-                'name'              => 'scripts', 
-                'response'           => array(
-                    'type' => 'PlainText', 
-                    ...
-                ),
-                ...
-            ),
-        ),
-    ),
-);
-```
-
-### Load your Custom Response objects
-
-You can also define your own response objects by extending the base abstract class *'Msl\RemoteHost\Response\AbstractActionResponse'* and use it in the configuration file.
-
-Here follow a class implementation and a configuration file for a custom response object.
-
-``` php
-<?php
-
-namespace Msl\Example\Request;
-
-class GoogleResponseActionResponse extends AbstractActionResponse
-{
-    /**
-     * Converts the Response object body to an array
-     *
-     * @return array
-     */
-    public function bodyToArray()
-    {
-        // Getting response content
-        $responseContent = $this->response->getContent();
-
-        // We parse the content in a custom way and we convert it to an array...
-        $customContentAsArray = array();
-        
-        ...........
-        ...........
-        ...........
-        
-        return $customContentAsArray;
-    }
-}
-```
-You can then use your custom response object by specifying the full class namespace in the configuration key *'response.type'* of a given configured action as follows:
-
-``` php
-<?php
-
-return array(
-    'parameters' => array(
-        ...
-    ),
-    ...
-    'actions' => array(
-        'example-api' => array( 
-            'action-1' => array( 
-                'name'              => 'scripts', 
-                'response'           => array(
-                    'type' => 'Msl\Example\Response\GoogleResponseActionResponse', 
-                    ...
-                ),
-                ...
-            ),
-        ),
-    ),
-);
-```
-
-**BUILT-IN RESPONSE WRAPPERS**
-------------------------------
-
-All Response objects (point above) are wrapped into a *ResponseWrapper* object, which 'extracts' some additional information from the Response object.
-
-This additional information includes:
-
-- The Response Status;
-- The Response Return Code;
-- The Response Return Message associated to the found Return Code;
-
-All Response Wrapper objects should extend the base abstract class *'Msl\RemoteHost\Response\Wrapper\AbstractResponseWrapper'*, which implements the interface *'Msl\RemoteHost\Response\Wrapper\ResponseWrapperInterface'*.
-
-### The Default response wrapper
-
-If you do not define a Response Wrapper in the configuration key *'response.wrapper'* , the default wrapper \Msl\RemoteHost\Response\Wrapper\DefaultResponseWrapper will be used.
-
-### Load your Custom Response Wrapper objects
-
-You can also define your own Response Wrapper objects by extending the base abstract class *'Msl\RemoteHost\Response\Wrapper\AbstractResponseWrapper'* and use it in the configuration file.
-
-Here follow a class implementation and a configuration file for a custom response wrapper object.
-
-``` php
-<?php
-
-use Msl\RemoteHost\Response\Wrapper\AbstractResponseWrapper;
-
-/**
- * Json Google Response Wrapper for Google Actions
- */
-class JsonGoogleResponseWrapper extends AbstractResponseWrapper
-{
-    /**
-     * Defaults status strings
-     */
-    const STATUS_NOT_FOUND = "NOT_FOUND";
-    const STATUS_OK        = "OK";
-
-    /**
-     * Initializes the object fields with the given raw data.
-     *
-     * @param array $rawData an array containing the raw response
-     *
-     * @return mixed
-     */
-    public function init(array $rawData)
-    {
-        // Setting raw data field
-        $this->rawData = $rawData;
-
-        // Setting status, returnCode and returnMessage fields to the ResponseWrapper entity
-        if (is_array($rawData)) {
-            // Setting  return code and return message
-            if (isset($rawData['status'])) {
-                if ($rawData['status'] === self::STATUS_OK) {
-                    $this->status        = true;
-                    $this->returnCode    = self::STATUS_OK;
-                    $this->returnMessage = self::STATUS_OK;
-                } else {
-                    $this->status        = false;
-                    $this->returnCode    = self::STATUS_NOT_FOUND;
-                    $this->returnMessage = self::STATUS_NOT_FOUND;
-                }
-            }
-        }
-    }
-
-    /**
-     * Returns the found routes
-     *
-     * @return array
-     */
-    public function getRoutes()
-    {
-        return $this->getBody();
-    }
-
-    /**
-     * Return the body of the Response.
-     *
-     * @return array
-     */
-    public function getBody()
-    {
-        if (isset($this->rawData['routes'])) {
-            return $this->rawData['routes'];
-        }
-        return array();
-    }
-}
-```
-You can then use your custom response wrapper object by specifying the full class namespace in the configuration key *'response.wrapper'* of a given configured action as follows:
-
-``` php
-<?php
-
-return array(
-    'parameters' => array(
-        ...
-    ),
-    ...
-    'actions' => array(
-        'example-api' => array( 
-            'action-1' => array( 
-                'name'              => 'scripts', 
-                'response'           => array(
-                    'type'    => 'Json', 
-                    'wrapper' => 'Connector\Api\Google\ResponseWrapper\JsonGoogleResponseWrapper', 
-                ),
-                ...
-            ),
-        ),
-    ),
-);
-```
