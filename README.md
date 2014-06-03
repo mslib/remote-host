@@ -1,9 +1,23 @@
 **REMOTEHOST LIBRARY**
 ======================
 
-This library provides an easy way to send requests to Web APIs. 
+This PHP library provides an easy way to send requests to Web APIs. 
 
-It is based on ZendFramework2. The following ZF2 modules are currently used 
+### System requirements
+
+RemoteHost library requires PHP 5.3 or later.
+
+#### PHP extensions
+
+The following PHP extensions are required:
+
+- PHP Curl;
+
+For more information about how to install all required extensions, please refer to their online documentation.
+
+### Dependencies
+
+The RemoteHost library is based on ZendFramework2. The following ZF2 modules are currently used 
 (take a look at the composer.json for a full overview about all dependencies):
 
 ```js
@@ -19,9 +33,6 @@ It is based on ZendFramework2. The following ZF2 modules are currently used
 The library was ONLY tested for requests sent with the Curl library. For stability purposes, please make sure 
 that all request objects configured with this library are an extension of 'Zend\Http\Client\Adapter\Curl' 
 class (for more details about this class, please refer to the ZF2 documentation). 
-
-For more information about how to define different adapter for all requests, please refer to the paragraph 
-'Step2: Configure your api calls' of this documentation.
 
 
 **INSTALLATION**
