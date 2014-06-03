@@ -321,7 +321,6 @@ An example of configured ***'config'*** block is the following:
 return array(
     ...
     ...
-    ...
     'config' => array(
         'maxredirects'  => 2,
         'timeout'       => 30,
@@ -434,7 +433,11 @@ return array(
 
 #### The Xml request
 
-The Xml request object can be used to send a request with an Xml content. It automatically adds the header 'Content-Type'=>'text/xml' to the request.
+The Xml request object can be used to send a request with an Xml content. It automatically adds the following header to the request:
+
+``` php
+'Content-Type'=>'text/xml' 
+```
 
 It supports the GET, POST, PUT, PATCH and DELETE http methods.
 
@@ -496,7 +499,11 @@ return array(
 
 #### The Json request
 
-The Json request object can be used to send a request with a Json content. It automatically adds the header 'Content-Type'=>'application/json' to the request.
+The Json request object can be used to send a request with a Json content. It automatically adds the following header to the request:
+
+``` php
+'Content-Type'=>'application/json' 
+```
 
 It supports the GET, POST, PUT, PATCH and DELETE http methods.
 
