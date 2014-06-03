@@ -10,16 +10,14 @@
 
 namespace Msl\RemoteHost\Request;
 
-use Zend\Http\Request;
-
 /**
- * UrlEncoded Action Request Object: extension of Zend\Http\Request
+ * Url Text Action Request Object: extension of UrlEncodedActionRequest
  *
  * @category  Request
  * @package   Msl\RemoteHost\Request
  * @author    "Marco Spallanzani" <mslib.code@gmail.com>
  */
-class UrlEncodedActionRequest extends AbstractActionRequest
+class UrlEncodedFromContentActionRequest extends UrlEncodedActionRequest
 {
     /**
      * Configures an action request with the given request values and content
@@ -35,34 +33,16 @@ class UrlEncodedActionRequest extends AbstractActionRequest
      */
     public function configure(array $requestValues, $content = "", array $urlBuildParameters = array(), array $headersValue = array())
     {
-        // Calling parent configuration
+        // Set request parameters in parent entity
         parent::configure($requestValues, $content, $urlBuildParameters, $headersValue);
-
-        // Getting parameters with values
-        $parameters = $this->getParametersWithValue($requestValues);
 
         // We set the parameters according to the method
         if ($this->isGet()) {
-            $this->getQuery()->fromArray($parameters);
+            $this->getQuery()->fromString($content);
         } else if ($this->isPost()) {
-            $this->getPost()->fromArray($parameters);
+            $this->getPost()->fromString($content);
         } else if ($this->isPut() || $this->isPatch() || $this->isDelete()) {
-            $this->getPost()->fromArray($parameters);
+            $this->getPost()->fromString($content);
         }
-    }
-
-    /**
-     * Sets a proper EncType on the given \Zend\Http\Client object (for UrlEncoded Request, used value is Client::ENC_URLENCODED)
-     *
-     * @param \Zend\Http\Client $client the Zend http client object
-     *
-     * @return mixed|\Zend\Http\Client
-     */
-    public function setClientEncType(\Zend\Http\Client $client)
-    {
-        // Setting EncType to UrlEncoded
-        $client->setEncType(\Zend\Http\Client::ENC_URLENCODED);
-
-        return $client;
     }
 }

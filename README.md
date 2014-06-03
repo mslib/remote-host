@@ -104,7 +104,7 @@ return array(
                         ...
                         ...
                     ),
-                    'type'                     => 'UrlEncoded|PostText|Xml|{Custom Class Name with full namespace that extends class Msl\RemoteHost\Request\AbstractActionRequest}', // 'UrlEncoded', 'PostText', 'Xml' are the request implementations available with the library
+                    'type'                     => 'Json|UrlEncoded|UrlEncodedFromContent|PlainText|Xml|{Custom Class Name with full namespace that extends class Msl\RemoteHost\Request\AbstractActionRequest}', // 'UrlEncoded', 'UrlEncodedFromContent', 'PlainText', 'Xml' and 'Json' are the request implementations available with the library
                     'method'                   => 'GET', // (optional) POST is the default value
                     'parameters'               => array( // (optional) array containing all request parameters (this array will be merged with the action_parameters defined above)
                         'key1' => 'value1', // put here a default value for each parameter; note that the default values will be overriden with the values passed in the execute method
@@ -561,15 +561,21 @@ The *AbstractActionRequest* class has a default implementation of the method *in
 
 The built-in request objects are: 
 
-* ***UrlEncodedActionRequest***: used to send a classic GET or POST requests;
+* ***UrlEncodedActionRequest***: used to send a request with encoded parameters;
+* ***UrlEncodedFromContentActionRequest***: used to send a request with encoded parameters extracted from the given request content;
 * ***XmlActionRequest***: used to send a request with an Xml content type;
-* ***PostTextActionRequest***: used to send a request with a Simple Text content type;
+* ***PlainTextActionRequest***: used to send a request with a Plain Text content type;
+* ***JsonActionRequest***: used to send a request with a Json content type;
+
+If you have to send a request whose content needs to be encoded in the url, then use the type ***UrlEncodedActionRequest***.
+On the other hand, if you want to send a request whose body contains a plain text, xml data or json data then use respectively
+***PlainTextActionRequest***, ***XmlActionRequest*** or ***JsonActionRequest***.
 
 #### The UrlEncoded request
 
 The UrlEncoded request object can be used to send a request with parameters encoded in the request. 
 
-It supports the POST and GET http methods.
+It supports the GET, POST, PUT, PATCH and DELETE http methods.
 
 In order to use it, you need to use the label *'UrlEncoded'* for the configuration key *'request.type'* of a given configured action as follows:
 
@@ -596,9 +602,42 @@ return array(
 );
 ```
 
+#### The UrlEncodedFromContent request
+
+The UrlEncodedFromContent request object can be used to send a request with parameters encoded in the request, these parameters being extracted from a given content.
+
+It supports the GET, POST, PUT, PATCH and DELETE http methods.
+
+In order to use it, you need to use the label *'UrlEncodedFromContent'* for the configuration key *'request.type'* of a given configured action as follows:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        ...
+    ),
+    ...
+    'actions' => array(
+        'example-api' => array(
+            'action-1' => array(
+                'name'              => 'scripts',
+                'request'           => array(
+                    'type' => 'UrlEncodedFromContent',
+                    ...
+                ),
+                ...
+            ),
+        ),
+    ),
+);
+```
+
 #### The Xml request
 
-The Xml request object can be used to send a request with an Xml content. 
+The Xml request object can be used to send a request with an Xml content. It automatically adds the header 'Content-Type'=>'text/xml' to the request.
+
+It supports the GET, POST, PUT, PATCH and DELETE http methods.
 
 In order to use it, you need to use the label *'Xml'* for the configuration key *'request.type'* of a given configured action as follows:
 
@@ -625,11 +664,13 @@ return array(
 );
 ```
 
-#### The PostText request
+#### The PlainText request
 
-The PostText request object can be used to send a request with a simple text content. 
+The PlainText request object can be used to send a request with a plain text content.
 
-In order to use it, you need to use the label *'PostText'* for the configuration key *'request.type'* of a given configured action as follows:
+It supports the GET, POST, PUT, PATCH and DELETE http methods.
+
+In order to use it, you need to use the label *'PlainText'* for the configuration key *'request.type'* of a given configured action as follows:
 
 ``` php
 <?php
@@ -644,7 +685,38 @@ return array(
             'action-1' => array( 
                 'name'              => 'scripts', 
                 'request'           => array(
-                    'type' => 'PostText', 
+                    'type' => 'PlainText',
+                    ...
+                ),
+                ...
+            ),
+        ),
+    ),
+);
+```
+
+#### The Json request
+
+The Json request object can be used to send a request with a Json content. It automatically adds the header 'Content-Type'=>'application/json' to the request.
+
+It supports the GET, POST, PUT, PATCH and DELETE http methods.
+
+In order to use it, you need to use the label *'Json'* for the configuration key *'request.type'* of a given configured action as follows:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        ...
+    ),
+    ...
+    'actions' => array(
+        'example-api' => array(
+            'action-1' => array(
+                'name'              => 'scripts',
+                'request'           => array(
+                    'type' => 'Json',
                     ...
                 ),
                 ...
@@ -752,7 +824,7 @@ The built-in response objects are:
 
 * ***JsonActionResponse***: used for all Json responses;
 * ***XmlActionResponse***: used for all Xml responses;
-* ***PlainTextActionResponse***: used for all Simple Text responses;
+* ***PlainTextActionResponse***: used for all Plain Text responses;
 
 ### The Json response
 

@@ -39,7 +39,11 @@ class DefaultResponseWrapper extends AbstractResponseWrapper
         $response = $actionResponse->getResponse();
         $this->returnCode    = $response->getStatusCode();
         $this->returnMessage = $response->getReasonPhrase();
-        if ($this->returnCode === Response::STATUS_CODE_200) {
+        if ($this->returnCode === Response::STATUS_CODE_200
+            || $this->returnCode === Response::STATUS_CODE_201
+                || $this->returnCode === Response::STATUS_CODE_202
+                    || $this->returnCode === Response::STATUS_CODE_204
+        ) {
             $this->status = true;
         } else {
             $this->status = false;

@@ -54,6 +54,7 @@ class XmlActionRequest extends UrlEncodedActionRequest
     public function setClientEncType(\Zend\Http\Client $client)
     {
         // Setting EncType to UrlEncoded
+//TODO is it really necessary? xml request should just send some xml code in the body; thus, no need for encryption
         $client->setEncType(\Zend\Http\Client::ENC_URLENCODED);
 
         return $client;

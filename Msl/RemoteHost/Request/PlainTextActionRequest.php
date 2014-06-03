@@ -10,16 +10,14 @@
 
 namespace Msl\RemoteHost\Request;
 
-use Zend\Http\Request;
-
 /**
- * Post Text Action Request Object: extension of AbstractActionRequest
+ * Plain Text Action Request Object: extension of AbstractActionRequest
  *
  * @category  Request
  * @package   Msl\RemoteHost\Request
  * @author    "Marco Spallanzani" <mslib.code@gmail.com>
  */
-class PostTextActionRequest extends AbstractActionRequest
+class PlainTextActionRequest extends AbstractActionRequest
 {
     /**
      * Configures an action request with the given request values and content
@@ -38,18 +36,12 @@ class PostTextActionRequest extends AbstractActionRequest
         // Set request parameters in parent entity
         parent::configure($requestValues, $content, $urlBuildParameters, $headersValue);
 
-        // We set the parameters according to the method
-        if ($this->isGet()) {
-            $this->getQuery()->fromString($content);
-        } else if ($this->isPost()) {
-            $this->getPost()->fromString($content);
-        }
-
+        // Setting request content
         $this->setContent($content);
     }
 
     /**
-     * Sets a proper EncType on the given \Zend\Http\Client object (for Xml Request, used value is Client::ENC_URLENCODED)
+     * Sets a proper EncType on the given \Zend\Http\Client object (for Plain Text Request, no encryption type is set)
      *
      * @param \Zend\Http\Client $client the Zend http client object
      *
@@ -57,9 +49,7 @@ class PostTextActionRequest extends AbstractActionRequest
      */
     public function setClientEncType(\Zend\Http\Client $client)
     {
-        // Setting EncType to UrlEncoded
-        $client->setEncType(\Zend\Http\Client::ENC_URLENCODED);
-
+        // Not required for simple text requests
         return $client;
     }
 }

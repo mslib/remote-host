@@ -26,6 +26,7 @@ use Msl\RemoteHost\Response\PlainTextResponse;
 use Msl\RemoteHost\Response\ActionResponseInterface;
 use Msl\RemoteHost\Response\Wrapper\DefaultResponseWrapper;
 use Msl\RemoteHost\Response\Wrapper\ResponseWrapperInterface;
+use Zend\Http\Exception\ExceptionInterface as ZendExceptionInterface;
 
 /**
  * Abstract host api
@@ -786,36 +787,37 @@ abstract class AbstractHostApi implements HostApiInterface
 
         // We configure the Zend\Http\Client object and we send the request
         $actionRequest->setClientEncType($this->client);
-        $response = $this->client->send($actionRequest);
 
-        // We check the response: is it successful?
-        if (!$response->isSuccess()) {
+        // Getting the response
+        $response = null;
+        try {
+            $response = $this->client->send($actionRequest);
+        } catch (ZendExceptionInterface $ze) {
             throw new UnsuccessApiActionException(
                 sprintf(
-                    '[%s] The action \'%s\' returned the following error code \'%s\', message \'%s\' and content \'%s\'.',
+                    '[%s] An exception was caught while running the action \'%s\'. Error code \'%s\', message \'%s\'.',
                     $this->getApiName(),
                     $actionName,
-                    $response->getStatusCode(),
-                    $response->getReasonPhrase(),
-                    $response->getContent()
+                    $ze->getCode(),
+                    $ze->getMessage()
                 ),
                 $actionRequest,
                 $response
             );
         }
 
-        // Now converting the response to an array
+        // Getting a proper ActionResponseInterface object instance
         $responseObj = $this->getResponseInstance(
             $actionRequest->getResponseType(),
             $actionRequest->getResponseWrapper()
         );
 
-        // We check if there is a response object defined. If yes, we wrap the response into a response wrapper object;
-        // if not, we return an array or a null value.
+        // We check if there is a response object defined. If yes, we wrap its main content into a response wrapper object;
         if ($responseObj instanceof ActionResponseInterface) {
             $responseObj->setResponse($response);
             return $responseObj->getParsedResponse();
         }
+        // if not, we return a null value.
         return null;
     }
 
