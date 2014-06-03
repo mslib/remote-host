@@ -311,7 +311,7 @@ return array(
 This block consists of an array containing all the Zend Http Client class configuration keys.
 For a full list of all possible values, please refer to the official *'Zend\Http\Client*' documentation or take a look at *'Zend\Http\Client->$config*' array.
 
-***NB. For stability reason, please only use the adapter *'Zend\Http\Client\Adapter\Curl'*, which is currently the only one that was tested.***
+***NB. For stability reason, please only use the adapter 'Zend\Http\Client\Adapter\Curl', which is currently the only one that was tested.***
 
 An example of configured ***'config'*** block is the following:
 
