@@ -236,8 +236,8 @@ return array(
 
 Let's see now more into details each configuration block.
 
-- ***'parameters'***: an array containing the general API host connection parameter;
-- ***'actions_parameters'***: an array containing all the parameters which are common to all actions; you still can override them by adding a different value in the parameters array of each action, as explained in the dedicated paragraph;
+- ***'parameters'***: an array containing the general API host connection parameters;
+- ***'actions_parameters'***: an array containing all the parameters which are common to all the configured actions; you still can override them by adding a different value in the parameters array of each action, as explained in the dedicated paragraph here below;
 - ***'config'***: the Zend Http Client class configuration; for stability reason, please only use the adapter *'Zend\Http\Client\Adapter\Curl'*, which is currently the only one that was tested;
 - ***'actions'***: an array containing a description of all the API actions; more details can be found in the dedicated paragraph here below;
 
@@ -276,12 +276,12 @@ return array(
 
 **This is not a required block.**
 
-This block consists of an array containing all the parameters which are common to all actions.
+This block consists of an array containing all the parameters which are common to all the configured actions.
 
 Let's suppose that you want to configure N api calls which share a given set of parameters.
-You can then specify here a list of such parameters as well as their default values.
+You can then specify here a list of such parameters, as well as their default values.
 
-An example of configured ***'parameters'*** block is the following:
+An example of configured ***'actions_parameters'*** block is the following:
 
 ``` php
 <?php
@@ -306,12 +306,12 @@ return array(
 
 ### The ***'config'*** configuration block
 
-**This is a required block.** If no ***'parameters'*** block is specified in the configuration array, then a *'\Msl\RemoteHost\Exception\BadApiConfigurationException'* exception will be thrown;
+**This is a required block.** If no ***'config'*** block is specified in the configuration array, then a *'\Msl\RemoteHost\Exception\BadApiConfigurationException'* exception will be thrown;
 
 This block consists of an array containing all the Zend Http Client class configuration keys.
-For a full list of all possible values, please refer to the official Zend\Http\Client documentation or take a look at Zend\Http\Client->$config array.
+For a full list of all possible values, please refer to the official *'Zend\Http\Client*' documentation or take a look at *'Zend\Http\Client->$config*' array.
 
-NB. For stability reason, please only use the adapter *'Zend\Http\Client\Adapter\Curl'*, which is currently the only one that was tested;
+***NB. For stability reason, please only use the adapter *'Zend\Http\Client\Adapter\Curl'*, which is currently the only one that was tested.***
 
 An example of configured ***'config'*** block is the following:
 
@@ -336,7 +336,7 @@ return array(
 
 ### The ***'actions'*** configuration block
 
-**This is a required block.** If no ***'parameters'*** block is specified in the configuration array, then a *'\Msl\RemoteHost\Exception\BadApiConfigurationException'* exception will be thrown;
+**This is a required block.** If no ***'actions'*** block is specified in the configuration array, then a *'\Msl\RemoteHost\Exception\BadApiConfigurationException'* exception will be thrown;
 
 
 **BUILT-IN REQUESTS**
@@ -361,13 +361,13 @@ The *AbstractActionRequest* class has a default implementation of the method *in
 The built-in request objects are:
 
 * ***UrlEncodedActionRequest***: used to send a request with encoded parameters;
-* ***UrlEncodedFromContentActionRequest***: used to send a request with encoded parameters extracted from the given request content;
+* ***UrlEncodedFromContentActionRequest***: used to send a request with encoded parameters extracted from the given request text content;
 * ***XmlActionRequest***: used to send a request with an Xml content type;
 * ***PlainTextActionRequest***: used to send a request with a Plain Text content type;
 * ***JsonActionRequest***: used to send a request with a Json content type;
 
-If you have to send a request whose content needs to be encoded in the url, then use the type ***UrlEncodedActionRequest***.
-On the other hand, if you want to send a request whose body contains a plain text, xml data or json data then use respectively
+If you have to send a request whose content needs to be encoded in the url, then use the type ***UrlEncodedActionRequest*** or ***UrlEncodedFromContentActionRequest***.
+If you want to send a request whose body contains a plain text, xml data or json data then use respectively
 ***PlainTextActionRequest***, ***XmlActionRequest*** or ***JsonActionRequest***.
 
 #### The UrlEncoded request
@@ -403,7 +403,7 @@ return array(
 
 #### The UrlEncodedFromContent request
 
-The UrlEncodedFromContent request object can be used to send a request with parameters encoded in the request, these parameters being extracted from a given content.
+The UrlEncodedFromContent request object can be used to send a request with parameters encoded in the request, these parameters being extracted from a given text content.
 
 It supports the GET, POST, PUT, PATCH and DELETE http methods.
 
@@ -815,36 +815,36 @@ class JsonGoogleResponseWrapper extends AbstractResponseWrapper
     /**
      * Defaults status strings
      */
-    const STATUS_NOT_FOUND = "NOT_FOUND";
-    const STATUS_OK        = "OK";
+    const STATUS_OK = "OK";
 
     /**
      * Initializes the object fields with the given raw data.
      *
-     * @param array $rawData an array containing the raw response
+     * @param array                    $rawData        array containing the response raw data
+     * @param ActionResponseInterface  $actionResponse the action response object from which to extract additional information
      *
      * @return mixed
      */
-    public function init(array $rawData)
+    public function init(array $rawData, ActionResponseInterface $actionResponse)
     {
         // Setting raw data field
         $this->rawData = $rawData;
 
-        // Setting status, returnCode and returnMessage fields to the ResponseWrapper entity
-        if (is_array($rawData)) {
-            // Setting  return code and return message
-            if (isset($rawData['status'])) {
-                if ($rawData['status'] === self::STATUS_OK) {
-                    $this->status        = true;
-                    $this->returnCode    = self::STATUS_OK;
-                    $this->returnMessage = self::STATUS_OK;
-                } else {
-                    $this->status        = false;
-                    $this->returnCode    = self::STATUS_NOT_FOUND;
-                    $this->returnMessage = self::STATUS_NOT_FOUND;
-                }
+        // Setting status
+        if (is_array($rawData) && isset($rawData['status'])) {
+            if ($rawData['status'] === self::STATUS_OK) {
+                $this->status = true;
+            } else {
+                $this->status = false;
             }
+        } else {
+            $this->status = false;
         }
+
+        // Setting return code and return message
+        $response = $actionResponse->getResponse();
+        $this->returnCode    = $response->getStatusCode();
+        $this->returnMessage = $response->getReasonPhrase();
     }
 
     /**
@@ -946,7 +946,6 @@ return array(
                 ),
             ),
         ),
-
     ),
 );
 ```
@@ -965,7 +964,6 @@ return array(
                 ...
             ),
         ),
-
     ),
     ...
     ...    
@@ -1122,8 +1120,8 @@ return array(
                 'request'           => array(
                     'adds_on'       => array(
                         array ( // (e.g. http://maps.googleapis.com/maps/api/directions/json)
-                            'type'   => 'plain',
-                            'content => 'directions/json'
+                            'type'    => 'plain',
+                            'content' => 'directions/json'
                         )
                     ),
                     'type'                     => 'UrlEncoded',
