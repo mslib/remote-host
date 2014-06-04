@@ -445,14 +445,14 @@ There are two kinds of possible 'adds-on':
 
 Each ***'adds_on'*** is an an array containing the following two configuration keys:
 
-- ***'type'***: the type; possible values are: 'plain' and 'replace', according to the required adds_on type;
-- ***'content'***: the content to be added to the base url;
+- ***'type'*** (required): the type; possible values are: 'plain' and 'replace', according to the required adds_on type;
+- ***'content'*** (required): the content to be added to the base url;
 
 If you need to use a ***'replace'*** adds_on, you can specify a replace variable in its content by wrapping it between the following characters:
 
-***{{***REPLACE_VARIABLE_NAME***}}***
+*** {{ *** REPLACE_VARIABLE_NAME *** }} ***
 
-The *'REPLACE_VARIABLE_NAME'* will be passed to the ***'execute()'*** method with the value to be replaced in the adds_on content.
+The *'REPLACE_VARIABLE_NAME'* will be passed to the ***'execute()'*** method (in the associative array parameter ***'$urlBuildParameters'***) with the value to be replaced in the adds_on content, as explained here below.
 
 Here follows an example of adds_on configuration:
 
@@ -589,13 +589,6 @@ For more information about the available response types and how to implement a c
 ###### The ***'wrapper'*** configuration key
 
 A wrapper class is an object which is returned by the ***'execute()'*** method and it contains a given set of information extracted by the network response.
-
-This information could include:
-
-- the HTTP status code and message;
-- the response body as an array;
-
-If not specified, the default wrapper \Msl\RemoteHost\Response\Wrapper\DefaultResponseWrapper will be used.
 
 For more information about the available wrapper classes and how to implement a custom one, please refer to the ***'BUILT-IN RESPONSES'*** of this document.
 
@@ -879,7 +872,7 @@ All response received by an implementation of 'Msl\RemoteHost\Api\AbstractHostAp
 The *AbstractActionResponse* implements the interface *'Msl\RemoteHost\Response\ActionResponseInterface'*, which defines the following methods to be implemented in the child class:
 
 * ***setResponse()***: sets the \Zend\Http\Response object in a given response object;
-* ***setResponseWrapper()***: sets a ResponseWrapperInterface implementation in a given response object (see section below for an explaination of the response wrapper objects);
+* ***setResponseWrapper()***: sets a ResponseWrapperInterface implementation in a given response object (see section below for an explanation of the response wrapper objects);
 * ***bodyToArray()***: converts the body of the response to an array according to the response type (json to array, xml to array, text to array, etc.);
 * ***getParsedResponse()***: returns a ResponseWrapperInterface instance;
 
@@ -1042,9 +1035,9 @@ return array(
 **BUILT-IN RESPONSE WRAPPERS**
 ------------------------------
 
-All Response objects (point above) are wrapped into a *ResponseWrapper* object, which 'extracts' some additional information from the Response object.
+A wrapper class is an object which is returned by the ***'execute()'*** method and it contains a given set of information extracted by the network response.
 
-This additional information includes:
+This information could include:
 
 - The Response Status: true if request was successful; false otherwise;
 - The Response Return Code: an internal or general return code (e.g. HTTP status code);
