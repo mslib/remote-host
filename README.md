@@ -450,7 +450,7 @@ Each ***'adds_on'*** is an an array containing the following two configuration k
 
 If you need to use a ***'replace'*** adds_on, you can specify a replace variable in its content by wrapping it between the following characters:
 
-*** {{ *** REPLACE_VARIABLE_NAME *** }} ***
+> {{ REPLACE_VARIABLE_NAME }}
 
 The *'REPLACE_VARIABLE_NAME'* will be passed to the ***'execute()'*** method (in the associative array parameter ***'$urlBuildParameters'***) with the value to be replaced in the adds_on content, as explained here below.
 
@@ -720,6 +720,8 @@ return array(
 );
 ```
 
+***NB. Do not use this request object if the body of your request is empty (e.g. request parameters are encoded in the url). Use UrlEncoded instead!***
+
 #### The PlainText request
 
 The PlainText request object can be used to send a request with a plain text content.
@@ -750,6 +752,8 @@ return array(
     ),
 );
 ```
+
+***NB. Do not use this request object if the body of your request is empty (e.g. request parameters are encoded in the url). Use UrlEncoded instead!***
 
 #### The Json request
 
@@ -785,6 +789,8 @@ return array(
     ),
 );
 ```
+
+***NB. Do not use this request object if the body of your request is empty (e.g. request parameters are encoded in the url). Use UrlEncoded instead!***
 
 #### Load your Custom Request objects
 
