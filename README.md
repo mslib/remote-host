@@ -95,7 +95,7 @@ return array(
     'actions' => array(
         'action-group' => array( // (REQUIRED) First Level Action Name 
             'action-name' => array( // (REQUIRED) Second Level Action Name 
-                'name'              => '{API action name or url part to be concatenated to the base url (e.g. action1)}', // (REQUIRED) the name of the action
+                'name'              => '{API action name}', // (REQUIRED) the name of the action
                 'request'           => array(
                     'adds_on'       => array( // Expressions to be added to the base url // e.g. 'name/protocol/entity/{id}/get
                         // here you can put as many adds on array as many you desire; they will be added to the base url in the given order
@@ -187,8 +187,11 @@ The above configuration is equivalent to sending a Curl request with the followi
 * **Request Url**: http://www.example.com/api/scripts?format=json
 
 The response expected is of type Json and it will be wrapped in the library default wrapper class 
-*'Msl\RemoteHost\Response\Wrapper\DefaultResponseWrapper'* (For more details about Response Wrappers, 
-please refer to the dedicated section '*BUILT-IN RESPONSE WRAPPERS*' of this documentation).
+*'Msl\RemoteHost\Response\Wrapper\DefaultResponseWrapper'*.
+
+For more details about Response Wrappers, please refer to the dedicated section '*BUILT-IN RESPONSE WRAPPERS*' of this documentation.
+
+For more details about all configuration keys, please refer to the dedicated section '*CONFIGURATION KEYS*' of this documentation.
 
 ### Step3: Generate your Api implementation
 
@@ -247,10 +250,10 @@ return array(
 
 Let's see now more into details each configuration block.
 
-- ***'parameters'***: an array containing the general API host connection parameters;
-- ***'actions_parameters'***: an array containing all the parameters which are common to all the configured actions; you still can override them by adding a different value in the parameters array of each action, as explained in the dedicated paragraph here below;
-- ***'config'***: the Zend Http Client class configuration; for stability reason, please only use the adapter *'Zend\Http\Client\Adapter\Curl'*, which is currently the only one that was tested;
-- ***'actions'***: an array containing a description of all the API actions; more details can be found in the dedicated paragraph here below;
+- ***'parameters'*** (required): an array containing the general API host connection parameters;
+- ***'actions_parameters'*** (optional): an array containing all the parameters which are common to all the configured actions; you still can override them by adding a different value in the parameters array of each action, as explained in the dedicated paragraph here below;
+- ***'config'*** (required): the Zend Http Client class configuration; for stability reason, please only use the adapter *'Zend\Http\Client\Adapter\Curl'*, which is currently the only one that was tested;
+- ***'actions'*** (required): an array containing a description of all the API actions; more details can be found in the dedicated paragraph here below;
 
 ### The ***'parameters'*** configuration block
 
@@ -258,10 +261,10 @@ Let's see now more into details each configuration block.
 
 This block consists of an array containing all the general API host connection parameter. The current version supports the following parameters:
 
-- ***'host'***: the API host url (with protocol as well); REQUIRED
-- ***'port'***: the API host port; OPTIONAL
-- ***'user'***: the API host connection user; OPTIONAL
-- ***'password'***: the API host connection password; OPTIONAL
+- ***'host'*** (required): the API host url (with protocol as well);
+- ***'port'*** (optional): the API host port;
+- ***'user'*** (optional): the API host connection user;
+- ***'password'*** (optional): the API host connection password;
 
 The only required parameter is ***'host'***. In case that no host parameter is specified, a *'\Msl\RemoteHost\Exception\BadApiConfigurationException'* exception will be thrown;
 
@@ -348,6 +351,253 @@ return array(
 
 **This is a required block.** If no ***'actions'*** block is specified in the configuration array, then a *'\Msl\RemoteHost\Exception\BadApiConfigurationException'* exception will be thrown;
 
+This block consists of an array containing all the API actions that you want to call from your application. An example of configured ***'actions'*** block is the following:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        ...
+    ),
+    'actions_parameters' => array(
+        ...
+    ),
+    'config' => array(
+        ...
+    ),
+    'actions' => array(
+        'action-group-1' => array( // (REQUIRED) First Level Action Name
+            'action-name-1' => array( // (REQUIRED) Second Level Action Name
+                'name'              => '{API action name}', // (REQUIRED) the name of the action
+                'request'           => array(
+                    'adds_on'       => array( // Expressions to be added to the base url // e.g. 'name/protocol/entity/{id}/get
+                        ...
+                    ),
+                    'headers'       => array( // Headers to be added to the requests with their default value
+                        ...
+                    ),
+                    'type'          => 'Json|UrlEncoded|UrlEncodedFromContent|PlainText|Xml|{Custom Class Name with full namespace that extends class Msl\RemoteHost\Request\AbstractActionRequest}', // 'UrlEncoded', 'UrlEncodedFromContent', 'PlainText', 'Xml' and 'Json' are the request implementations available with the library
+                    'method'        => 'GET', // (optional) POST is the default value
+                    'parameters'    => array( // (optional) array containing all request parameters (this array will be merged with the action_parameters defined above)
+                        ...
+                    ),
+                    'host'          => '', //(you can override here the general host; if left empty or not specified, the default value will be used)
+                    'port'          => '', //(you can override here the general port; if left empty or not specified, the default value will be used)
+                ),
+                'response' => array(
+                    'type'      => 'Json|PlainText|Xml|{Custom Class Name with full namespace that extends class Msl\RemoteHost\Response\AbstractActionResponse}', // (REQUIRED) Json, PlainText, Xml are the response implementations available with the library
+                    'wrapper'   => '{Custom Class Name with full }', // (optional) if not specified, the default wrapper \Msl\RemoteHost\Response\Wrapper\DefaultResponseWrapper will be used
+                ),
+            ),
+            'action-name-2' => array(
+                ...
+                ...
+            ),
+        ),
+        'action-group-2' => array(
+            'action-name-1' => array(
+                ...
+                ...
+            ),
+            'action-name-2' => array(
+                ...
+                ...
+            ),
+        ),
+    ),
+);
+```
+
+Each configured action must have two action name levels. This allows to group actions in groups for a better configuration readability.
+Each configured action, at execution time, is identified by a string, which is the concatenation of the two configuration levels (separated by ***'.'***).
+For example, by looking at the above configuration array, the action whose name is 'action-name-1' and whose group is 'action-group-1' can
+be identified by the string ***'action-group-1.action-name-1'***.
+
+Let's take a look at all the components of each configured action.
+
+#### The ***'action'*** configuration keys
+
+The available configuration keys for each action are the following:
+
+- ***'name'*** (required): an arbitrary API action name; this is a REQUIRED field;
+- ***'request'*** (required): an array containing all the required configuration for the request (type, method, parameters, headers, url add-on, etc.); this is a REQUIRED field;
+- ***'response'*** (required): an array containing all the required configuration for the response (type and wrapper); this is a REQUIRED field;
+
+##### The ***'request'*** configuration keys
+
+In this sub-block, you need to specify all the required configuration keys of a given request. More into details, the available keys are:
+
+- ***'adds_on'*** (optional): an array containing all possible expressions to be added to the base url // e.g. 'name/protocol/entity/{id}/get;
+- ***'headers'*** (optional): an array containing all the headers to be added to the requests with their default value;
+- ***'type'*** (required): the type of the request;
+- ***'method'*** (optional): the HTTP method; the current version supports GET, POST, PATCH, PUT and DELETE; this is an optional parameter; if not specified, the default 'POST' value will be used;
+- ***'parameters'*** (optional): an array containing all the request parameters and their default values; this array will be merged with the ***'action_parameters'*** defined above;
+- ***'host'*** (optional): if you want to use a host different than the general one, you can do that by specifying it here; if left empty or not specified, the default value will be used (the one specified in the global configuration);
+- ***'port'*** (optional): if you want to use a port different than the general one, you can do that by specifying it here; if left empty or not specified, the default value will be used (the one specified in the global configuration);
+
+###### The ***'adds_on'*** configuration keys
+
+There are two kinds of possible 'adds-on':
+
+- the plain text add-on (simply concatenated to the base url);
+- the replace add-on (concatenated to the base url with some variables replaced in its content);
+
+Each ***'adds_on'*** is an an array containing the following two configuration keys:
+
+- ***'type'***: the type; possible values are: 'plain' and 'replace', according to the required adds_on type;
+- ***'content'***: the content to be added to the base url;
+
+If you need to use a ***'replace'*** adds_on, you can specify a replace variable in its content by wrapping it between the following characters:
+
+***{{***REPLACE_VARIABLE_NAME***}}***
+
+The *'REPLACE_VARIABLE_NAME'* will be passed to the ***'execute()'*** method with the value to be replaced in the adds_on content.
+
+Here follows an example of adds_on configuration:
+
+``` php
+<?php
+
+return array(
+    'parameters' => array(
+        'host'      => 'http://www.example.com/api',
+        ...
+        ...
+    ),
+    ...
+    ...
+    'actions' => array(
+        'action-group-1' => array(
+            'action-name-1' => array(
+                ...
+                ...
+                'request'           => array(
+                    ...
+                    ...
+                    'adds_on'       => array(
+                        array(
+                            'type'    => 'plain',
+                            'content' => 'url-added-plain-part'
+                        ),
+                        array(
+                            'type'    => 'replace',
+                            'content' => 'url-added-replace-part/{{id}}'
+                        ),
+                    ),
+                    ...
+                    ...
+                ),
+                ...
+                ...
+            ),
+        ),
+        ...
+        ...
+    ),
+);
+```
+
+As we can see in the second adds_on, we specified that the content 'url-added-part/{{id}}' will be added to the base url and that the string {{id}} will be
+replaced by a value passed to the ***'execute()'*** method as an entry of the associative array parameter ***'$urlBuildParameters'***,
+where the key of such an entry will be 'id' and the value, the desired value.
+
+As a result of the two adds_on that are specified in the above example configuration array, the final url used to connect to the api will be:
+
+> http://www.example.com/api/url-added-plain-part/url-added-replace-part/{{id}}
+
+where {{id}} will be replaced by the ***'execute()'*** method, as mentioned here above.
+
+***NB All the specified adds_on will be added to the base url in the given order.***
+
+###### The ***'headers'*** configuration keys
+
+This is an associative array containing all the headers to be added to the request.
+
+Here follows an example of headers configuration:
+
+``` php
+<?php
+
+return array(
+    ...
+    ...
+    'actions' => array(
+        'action-group-1' => array(
+            'action-name-1' => array(
+                ...
+                ...
+                'request'           => array(
+                    ...
+                    ...
+                    'headers'       => array( // Headers to be added to the requests with their default value
+                        'Accept' => 'application/json',
+                    ),
+                    ...
+                    ...
+                ),
+                ...
+                ...
+            ),
+        ),
+        ...
+        ...
+    ),
+);
+```
+
+These headers can be overriden when calling the ***'execute()'*** method, by specifying a different value for the configured
+headers in the associative array parameter ***'$headersValue'***; in the above case, in order to override the default header
+***'Accept' => 'application/json'***, you will have to pass the following array as the array parameter ***'$headersValue'***:
+
+``` php
+    array(
+        'Accept' => 'text/xml',
+    )
+```
+
+###### The ***'type'*** configuration key
+
+This configuration key defines the desired request type. The following request types are already implemented in the library:
+
+- ***'UrlEncoded'***: used to send a request with some parameters encoded in the url;
+- ***'UrlEncodedFromContent'***: used to send a request with encoded parameters extracted from a given request text content;
+- ***'PlainText'***: used to send a request with a Plain Text content type;
+- ***'Xml'***: used to send a request with an Xml content type;
+- ***'Json'***: used to send a request with a Json content type;
+
+For more information about the available request types and how to implement a custom one, please refer to the ***'BUILT-IN REQUESTS'*** of this document.
+
+
+##### The ***'response'*** configuration keys
+
+In this sub-block, you need to specify all the required configuration keys of a given action. More into details, the available keys are:
+
+- ***'type'*** (required): the type of the request;
+- ***'wrapper'*** (optional): a custom wrapper class name; if not specified, the default wrapper \Msl\RemoteHost\Response\Wrapper\DefaultResponseWrapper will be used;
+
+###### The ***'type'*** configuration key
+
+This configuration key defines the desired response type. The following response types are already implemented in the library:
+
+- ***'PlainText'***: used for all Plain Text responses;
+- ***'Xml'***: used for all Xml responses;
+- ***'Json'***: used for all Json responses;
+
+For more information about the available response types and how to implement a custom one, please refer to the ***'BUILT-IN RESPONSES'*** of this document.
+
+###### The ***'wrapper'*** configuration key
+
+A wrapper class is an object which is returned by the ***'execute()'*** method and it contains a given set of information extracted by the network response.
+
+This information could include:
+
+- the HTTP status code and message;
+- the response body as an array;
+
+If not specified, the default wrapper \Msl\RemoteHost\Response\Wrapper\DefaultResponseWrapper will be used.
+
+For more information about the available wrapper classes and how to implement a custom one, please refer to the ***'BUILT-IN RESPONSES'*** of this document.
 
 **BUILT-IN REQUESTS**
 ---------------------
