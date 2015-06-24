@@ -44,4 +44,44 @@ interface ResponseWrapperInterface
      * @return mixed
      */
     public function getBody();
+
+    /**
+     * Returns an array containing the data to be used in the hydration process of a given object
+     *
+     * @return array
+     */
+    public function getHydrationData();
+
+    /**
+     * Returns true if the Http status code is 200 or 201 or 204; false otherwise
+     *
+     * @return bool
+     */
+    public function isHttpStatusSuccessful();
+
+    /**
+     * Returns true if the http status code is equal to 404; false otherwise
+     *
+     * @return bool
+     */
+    public function isNotFoundHttpStatus();
+
+    /**
+     * @return \Zend\Http\Response
+     */
+    public function getServerRawResponse();
+
+    /**
+     * Returns the request name (name or uri) for this wrapped response object
+     *
+     * @return string
+     */
+    public function getRequestName();
+
+    /**
+     * Inits the status field from the response
+     *
+     * @return mixed
+     */
+    public function initStatusFromResponse();
 }

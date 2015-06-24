@@ -20,6 +20,11 @@ namespace Msl\RemoteHost\Response;
 abstract class AbstractActionResponse implements ActionResponseInterface
 {
     /**
+     * @var string
+     */
+    protected $requestName;
+
+    /**
      * Response wrapper instance
      *
      * @var Wrapper\ResponseWrapperInterface
@@ -94,5 +99,27 @@ abstract class AbstractActionResponse implements ActionResponseInterface
             return $this->responseWrapper;
         }
         return $rawData;
+    }
+
+    /**
+     * Returns the request name (name or uri) for this action response object
+     *
+     * @return string
+     */
+    public function getRequestName()
+    {
+        return $this->requestName;
+    }
+
+    /**
+     * Sets the request name (name or uri) for this action response object
+     *
+     * @param string $requestName
+     *
+     * @return mixed
+     */
+    public function setRequestName($requestName)
+    {
+        $this->requestName = $requestName;
     }
 }

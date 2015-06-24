@@ -815,6 +815,7 @@ abstract class AbstractHostApi implements HostApiInterface
         // We check if there is a response object defined. If yes, we wrap its main content into a response wrapper object;
         if ($responseObj instanceof ActionResponseInterface) {
             $responseObj->setResponse($response);
+            $responseObj->setRequestName($actionName);
             return $responseObj->getParsedResponse();
         }
         // if not, we return a null value.

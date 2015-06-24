@@ -57,4 +57,20 @@ interface ActionResponseInterface
      * @return Wrapper\ResponseWrapperInterface
      */
     public function getParsedResponse();
+
+    /**
+     * Returns the request name (name or uri) for this action response object
+     *
+     * @return string
+     */
+    public function getRequestName();
+
+    /**
+     * Sets the request name (name or uri) for this action response object
+     *
+     * @param string $requestName
+     *
+     * @return mixed
+     */
+    public function setRequestName($requestName);
 }

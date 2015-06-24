@@ -23,27 +23,14 @@ use Zend\Http\Response;
 class DefaultResponseWrapper extends AbstractResponseWrapper
 {
     /**
-     * Initializes the object fields with the given raw data
-     *
-     * @param array                                             $rawData        array containing the response raw data
-     * @param ActionResponseInterface  $actionResponse the action response object from which to extract additional information
+     * Inits the status field from the response
      *
      * @return mixed
      */
-    public function init(array $rawData, ActionResponseInterface $actionResponse)
+    public function initStatusFromResponse()
     {
-        // Setting raw data field
-        $this->rawData = $rawData;
-
-        // Setting wrapper status and message fields
-        $response = $actionResponse->getResponse();
-        $this->returnCode    = $response->getStatusCode();
-        $this->returnMessage = $response->getReasonPhrase();
-        if ($this->returnCode === Response::STATUS_CODE_200
-            || $this->returnCode === Response::STATUS_CODE_201
-                || $this->returnCode === Response::STATUS_CODE_202
-                    || $this->returnCode === Response::STATUS_CODE_204
-        ) {
+        // Setting wrapper status
+        if ($this->serverRawResponse->isSuccess()) {
             $this->status = true;
         } else {
             $this->status = false;
