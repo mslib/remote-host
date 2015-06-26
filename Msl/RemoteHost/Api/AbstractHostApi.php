@@ -882,4 +882,15 @@ abstract class AbstractHostApi implements HostApiInterface
     {
         $this->commonDynamicHeaders = $commonDynamicHeaders;
     }
+
+    /**
+     * Adds a common dynamic header to the client list
+     *
+     * @param string $headerKey
+     * @param string $headerValue
+     */
+    public function addCommonDynamicHeader($headerKey, $headerValue)
+    {
+        $this->commonDynamicHeaders[$headerKey] = $headerValue;
+    }
 }
