@@ -121,6 +121,11 @@ abstract class AbstractHostApi implements HostApiInterface
      */
     protected $initAllActions = false;
 
+    /**
+     * @var array
+     */
+    protected $commonDynamicHeaders = array();
+
     /*****************************
      *   C O N S T R U C T O R   *
      *****************************/
@@ -772,6 +777,8 @@ abstract class AbstractHostApi implements HostApiInterface
 
         // Setting all request parameters with the given values (request parameters array)
         try {
+            // Merging request headers with common dynamic headers
+            $headersValue = array_merge($this->commonDynamicHeaders, $headersValue);
             $actionRequest->configure($requestParameters, $content, $urlBuildParameters, $headersValue);
         } catch (\Exception $ex) {
             throw new NotConfiguredActionException(
@@ -858,5 +865,21 @@ abstract class AbstractHostApi implements HostApiInterface
     public function getApiName()
     {
         return $this->apiName;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCommonDynamicHeaders()
+    {
+        return $this->commonDynamicHeaders;
+    }
+
+    /**
+     * @param array $commonDynamicHeaders
+     */
+    public function setCommonDynamicHeaders($commonDynamicHeaders)
+    {
+        $this->commonDynamicHeaders = $commonDynamicHeaders;
     }
 }
